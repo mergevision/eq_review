@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>設備・図面サービス 現状診断</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Hiragino Sans','Yu Gothic UI',sans-serif;background:#F4F8FA;color:#2C2C2A;min-height:100vh}
+
+/* ── Header */
+.header{background:#0D2535;padding:12px 24px;display:flex;align-items:center;justify-content:space-between}
+.header-left{display:flex;align-items:center;gap:12px}
+.header-logo{font-size:13px;font-weight:600;color:#9FE1CB;letter-spacing:.5px}
+.header-title{font-size:13px;color:#8EAAB8}
+.btn-admin-link{font-size:12px;color:#8EAAB8;background:none;border:.5px solid #2A4A5E;border-radius:6px;padding:5px 12px;cursor:pointer;font-family:inherit;transition:color .15s,border-color .15s}
+.btn-admin-link:hover{color:#9FE1CB;border-color:#9FE1CB}
+
+.container{max-width:640px;margin:0 auto;padding:32px 20px 60px}
+.screen{display:none}.screen.active{display:block}
+
+/* ── Start */
+.start-card{background:#fff;border-radius:12px;border:.5px solid #D3D1C7;padding:32px;margin-top:8px}
+.start-tag{display:inline-block;font-size:11px;padding:3px 12px;border-radius:99px;background:#E1F5EE;color:#085041;font-weight:500;margin-bottom:14px}
+.start-h{font-size:22px;font-weight:700;color:#2C2C2A;line-height:1.4;margin-bottom:8px}
+.start-sub{font-size:13px;color:#5F5E5A;line-height:1.7;margin-bottom:24px}
+label.field-label{display:block;font-size:12px;font-weight:600;color:#5F5E5A;margin-bottom:6px}
+input.field{width:100%;border:.5px solid #D3D1C7;border-radius:8px;padding:11px 14px;font-size:15px;font-family:inherit;outline:none;transition:border-color .15s}
+input.field:focus{border-color:#0F6E56}
+.btn-primary{display:block;width:100%;margin-top:20px;padding:14px;background:#0F6E56;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:600;font-family:inherit;cursor:pointer;transition:background .15s}
+.btn-primary:hover{background:#085041}
+.btn-primary:disabled{background:#B4B2A9;cursor:default}
+.start-note{font-size:11px;color:#888780;margin-top:12px;text-align:center}
+
+/* ── Wizard */
+.progress-wrap{margin-bottom:20px}
+.progress-meta{display:flex;justify-content:space-between;margin-bottom:6px;font-size:12px;color:#5F5E5A}
+.progress-bar{height:4px;background:#D3D1C7;border-radius:2px}
+.progress-fill{height:4px;background:#0F6E56;border-radius:2px;transition:width .4s}
+.q-card{background:#fff;border:.5px solid #D3D1C7;border-radius:12px;padding:24px}
+.q-step{font-size:11px;color:#0F6E56;font-weight:600;margin-bottom:6px}
+.q-text{font-size:18px;font-weight:700;color:#2C2C2A;line-height:1.4;margin-bottom:4px}
+.q-sub{font-size:12px;color:#5F5E5A;margin-bottom:20px}
+.choices{display:flex;flex-direction:column;gap:10px}
+.choice{display:flex;align-items:flex-start;gap:14px;padding:14px 16px;border:.5px solid #D3D1C7;border-radius:10px;background:#fff;cursor:pointer;transition:border-color .15s,background .15s;text-align:left;width:100%}
+.choice:hover{border-color:#0F6E56;background:#F0FBF6}
+.choice.selected{border-color:#0F6E56;background:#E1F5EE}
+.choice-icon{width:36px;height:36px;border-radius:50%;background:#F1EFE8;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px;transition:background .15s}
+.choice.selected .choice-icon,.choice:hover .choice-icon{background:#9FE1CB}
+.choice-main{font-size:14px;font-weight:600;color:#2C2C2A;line-height:1.4}
+.choice-desc{font-size:11.5px;color:#5F5E5A;margin-top:3px;line-height:1.5}
+.nav{display:flex;justify-content:space-between;margin-top:20px}
+.btn-back{background:none;border:.5px solid #D3D1C7;border-radius:8px;padding:10px 20px;font-size:13px;color:#5F5E5A;font-family:inherit;cursor:pointer}
+.btn-back:hover{background:#F1EFE8}
+.btn-back:disabled{opacity:.3;cursor:default}
+.btn-next{background:#0F6E56;border:none;border-radius:8px;padding:10px 24px;font-size:13px;font-weight:600;color:#fff;font-family:inherit;cursor:pointer}
+.btn-next:hover{background:#085041}
+.btn-next:disabled{background:#B4B2A9;cursor:default}
+
+/* ── Result */
+.result-tag{display:inline-block;font-size:11px;padding:3px 12px;border-radius:99px;background:#E1F5EE;color:#085041;font-weight:500;margin-bottom:10px}
+.result-h{font-size:20px;font-weight:700;color:#2C2C2A;margin-bottom:4px}
+.result-company{font-size:13px;color:#5F5E5A;margin-bottom:20px}
+.service-cards{display:flex;flex-direction:column;gap:12px;margin-bottom:20px}
+.scard{background:#fff;border:.5px solid #D3D1C7;border-radius:12px;padding:16px}
+.scard-head{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.scard-icon{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.scard-title{font-size:14px;font-weight:700;color:#2C2C2A}
+.scard-body{font-size:12px;color:#5F5E5A;line-height:1.7;margin-bottom:8px}
+.scard-evidence{font-size:11px;color:#085041;background:#E1F5EE;padding:7px 10px;border-radius:6px;line-height:1.6}
+.cta-box{background:#E1F5EE;border-radius:12px;padding:16px;display:flex;align-items:center;gap:12px;margin-bottom:20px}
+.cta-icon{width:40px;height:40px;border-radius:50%;background:#9FE1CB;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.cta-text{font-size:13px;font-weight:600;color:#085041}
+.cta-sub{font-size:11px;color:#1D9E75;margin-top:2px}
+.result-actions{display:flex;gap:10px}
+.btn-pdf{flex:1;padding:12px;background:#0D2535;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;font-family:inherit;cursor:pointer}
+.btn-pdf:hover{background:#122F42}
+.btn-restart{flex:1;padding:12px;background:#fff;color:#2C2C2A;border:.5px solid #D3D1C7;border-radius:8px;font-size:14px;font-family:inherit;cursor:pointer}
+.btn-restart:hover{background:#F1EFE8}
+.saving-msg{text-align:center;font-size:12px;color:#888780;margin-top:10px}
+
+/* ── Admin login */
+.login-card{background:#fff;border:.5px solid #D3D1C7;border-radius:12px;padding:32px;margin-top:8px;max-width:360px;margin-left:auto;margin-right:auto}
+.login-h{font-size:18px;font-weight:700;margin-bottom:4px}
+.login-sub{font-size:12px;color:#5F5E5A;margin-bottom:24px}
+.login-err{font-size:12px;color:#A32D2D;margin-top:8px;display:none}
+.btn-login{width:100%;margin-top:16px;padding:12px;background:#0D2535;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;font-family:inherit;cursor:pointer}
+.btn-login:hover{background:#122F42}
+
+/* ── Admin dashboard */
+.admin-wrap{padding:24px 20px 60px;max-width:960px;margin:0 auto}
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:24px}
+.stat-card{background:#fff;border-radius:10px;border:.5px solid #D3D1C7;padding:16px}
+.stat-label{font-size:11px;color:#5F5E5A;margin-bottom:4px}
+.stat-val{font-size:26px;font-weight:700;color:#2C2C2A}
+.stat-sub{font-size:11px;color:#888780;margin-top:2px}
+.section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.section-title{font-size:15px;font-weight:700}
+.btn-refresh{background:#fff;border:.5px solid #D3D1C7;border-radius:6px;padding:6px 14px;font-size:12px;font-family:inherit;cursor:pointer;color:#5F5E5A}
+.btn-refresh:hover{background:#F1EFE8}
+.btn-logout{background:none;border:.5px solid #2A4A5E;border-radius:6px;padding:5px 12px;font-size:12px;color:#8EAAB8;font-family:inherit;cursor:pointer}
+.btn-logout:hover{color:#9FE1CB;border-color:#9FE1CB}
+.table-wrap{background:#fff;border:.5px solid #D3D1C7;border-radius:10px;overflow:hidden;overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:700px}
+thead{background:#F4F8FA}
+th{text-align:left;padding:10px 12px;font-size:11px;font-weight:600;color:#5F5E5A;border-bottom:.5px solid #D3D1C7;white-space:nowrap}
+td{padding:10px 12px;font-size:12px;color:#2C2C2A;border-bottom:.5px solid #D3D1C7;vertical-align:top}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#F8FCFA}
+.badge{display:inline-block;font-size:10px;padding:2px 7px;border-radius:99px;white-space:nowrap;margin:2px 2px 2px 0}
+.badge-teal{background:#E1F5EE;color:#085041}
+.badge-blue{background:#E6F1FB;color:#0C447C}
+.badge-amber{background:#FAEEDA;color:#633806}
+.badge-yellow{background:#FFF8E1;color:#7B4F00}
+.badge-green{background:#E8F5E9;color:#1B5E20}
+.badge-purple{background:#F3EEFF;color:#5B2D8E}
+.badge-gray{background:#F1EFE8;color:#5F5E5A}
+.services-cell{display:flex;flex-wrap:wrap;gap:3px}
+.tbl-loading{text-align:center;padding:40px;color:#888780;font-size:14px}
+
+/* ── Print */
+@media print{
+  body{background:#fff}
+  .header{display:none}
+  .no-print{display:none!important}
+  #screen-start,#screen-wizard,#screen-admin-login,#screen-admin{display:none!important}
+  #screen-result{display:block!important}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <span class="header-logo">MergeVision</span>
+    <span class="header-title">設備・図面サービス 現状診断</span>
+  </div>
+  <button class="btn-admin-link no-print" onclick="goAdmin()">管理画面</button>
+</div>
+
+<div class="container" id="main-container">
+  <!-- START -->
+  <div class="screen active" id="screen-start">
+    <div class="start-card">
+      <span class="start-tag">現状診断ツール</span>
+      <div class="start-h">「こんなこと、頼める人<br>いないかな…」</div>
+      <div class="start-sub">3〜4問に答えるだけで、お役に立てるサービスをご提案します。<br>ヒアリング・お見積りは無料です。</div>
+      <label class="field-label">会社名（任意）</label>
+      <input class="field" id="company-input" type="text" placeholder="例：株式会社〇〇製作所" maxlength="80">
+      <button class="btn-primary" id="btn-start">診断をはじめる →</button>
+      <div class="start-note">個人情報は収集しません。会社名は結果画面の表示のみに使用します。</div>
+    </div>
+  </div>
+
+  <!-- WIZARD -->
+  <div class="screen" id="screen-wizard">
+    <div class="progress-wrap no-print">
+      <div class="progress-meta">
+        <span id="step-label">質問 1 / 3</span>
+        <span id="step-pct">0%</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+    </div>
+    <div class="q-card">
+      <div class="q-step" id="q-step"></div>
+      <div class="q-text" id="q-text"></div>
+      <div class="q-sub" id="q-sub"></div>
+      <div class="choices" id="choices-wrap"></div>
+    </div>
+    <div class="nav no-print">
+      <button class="btn-back" id="btn-back">← 戻る</button>
+      <button class="btn-next" id="btn-next" disabled>次へ →</button>
+    </div>
+  </div>
+
+  <!-- RESULT -->
+  <div class="screen" id="screen-result">
+    <span class="result-tag">診断結果</span>
+    <div class="result-h">こんなサービスが提供できます</div>
+    <div class="result-company" id="result-company"></div>
+    <div class="service-cards" id="service-cards"></div>
+    <div class="cta-box">
+      <div class="cta-icon">💬</div>
+      <div>
+        <div class="cta-text">「こんなこと、できる？」で大丈夫です。まずはご相談を。</div>
+        <div class="cta-sub">お見積り・ヒアリングは無料です。</div>
+      </div>
+    </div>
+    <div class="result-actions no-print">
+      <button class="btn-pdf" onclick="printResult()">📄 PDFで保存</button>
+      <button class="btn-restart" onclick="restart()">もう一度診断する</button>
+    </div>
+    <div class="saving-msg" id="saving-msg"></div>
+  </div>
+
+  <!-- ADMIN LOGIN -->
+  <div class="screen" id="screen-admin-login">
+    <div class="login-card">
+      <div class="login-h">🔒 管理画面ログイン</div>
+      <div class="login-sub">パスワードを入力してください</div>
+      <label class="field-label">パスワード</label>
+      <input class="field" type="password" id="pw-input" placeholder="••••••••">
+      <div class="login-err" id="login-err">パスワードが違います</div>
+      <button class="btn-login" onclick="doLogin()">ログイン</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN DASHBOARD (full width, outside container) -->
+<div id="screen-admin" style="display:none">
+  <div class="admin-wrap">
+    <div class="section-head" style="margin-bottom:20px">
+      <div style="font-size:15px;font-weight:700">📊 診断履歴</div>
+      <div style="display:flex;gap:8px">
+        <button class="btn-refresh" onclick="loadData()">↻ 更新</button>
+        <button class="btn-logout" onclick="doLogout()">ログアウト</button>
+      </div>
+    </div>
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-label">総診断数</div><div class="stat-val" id="stat-total">—</div><div class="stat-sub">累計</div></div>
+      <div class="stat-card"><div class="stat-label">今週</div><div class="stat-val" id="stat-week">—</div><div class="stat-sub">件</div></div>
+      <div class="stat-card"><div class="stat-label">最多お困りごと</div><div class="stat-val" id="stat-top" style="font-size:14px;padding-top:8px">—</div><div class="stat-sub">（Q1）</div></div>
+      <div class="stat-card"><div class="stat-label">会社名あり</div><div class="stat-val" id="stat-named">—</div><div class="stat-sub">件</div></div>
+    </div>
+    <div class="section-head">
+      <div class="section-title">診断履歴一覧</div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:80px">日時</th>
+            <th style="width:120px">会社名</th>
+            <th style="width:100px">Q1 お困りごと</th>
+            <th style="width:100px">Q2 詳細</th>
+            <th style="width:80px">規模感</th>
+            <th>提案されたサービス</th>
+          </tr>
+        </thead>
+        <tbody id="table-body">
+          <tr><td colspan="6" class="tbl-loading">読み込み中...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://wvhwxpookqktbzfofxcy.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind2aHd4cG9va3FrdGJ6Zm9meGN5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwNzM4ODAsImV4cCI6MjA5NjY0OTg4MH0.wzKen3asNkQ0zttVvUnpzmJZRUjTf7fzHBd3Go23ptE';
+const ADMIN_PASSWORD = 'admin1234';
+
+// ════════════════════════════════════════
+// QUESTIONS
+// ════════════════════════════════════════
+const QUESTIONS = [
+  {
+    id: 'situation', step: '質問 1',
+    text: '現在、どんな状況で困っていますか？',
+    sub: '当てはまるものをひとつ選んでください（複数ある場合は最も急ぎのもの）',
+    choices: [
+      { val:'automation', icon:'⚙',  main:'自動化・省力化したい',            desc:'手作業が多い、人手が足りない、同じ作業の繰り返しをなんとかしたい' },
+      { val:'drawing',    icon:'📄', main:'図面まわりで困っている',           desc:'紙図面しかない、古い、管理できていない、3Dデータがない' },
+      { val:'optical',    icon:'🔭', main:'光学・精密設計の相談をしたい',     desc:'光学系の設計・見直し、HUD/AR/照明光学系、試作・シミュレーションなど' },
+      { val:'electrical', icon:'⚡', main:'電気回路・基板設計の相談をしたい', desc:'電気回路設計、FPC設計、EMI対策、電源設計、デバッグ検証など' },
+      { val:'production', icon:'🏭', main:'生産ライン・製品設計の相談をしたい',desc:'ライン構築、工数削減、不良低減、製品設計、解析シミュレーションなど' },
+      { val:'repair',     icon:'🔧', main:'古い設備を直したい・改造したい',   desc:'壊れた、老朽化した、図面も資料もない設備をなんとかしたい' },
+      { val:'consult',    icon:'💬', main:'何から手をつければいいかわからない',desc:'課題はあるが整理できていない、まず相談したい' },
+    ]
+  },
+  {
+    id: 'drawing_detail', cond: { situation: 'drawing' }, step: '質問 2',
+    text: '図面はどんな状態ですか？', sub: '現在の状況を教えてください',
+    choices: [
+      { val:'paper',   icon:'📦', main:'紙の図面しかない',            desc:'紙図面が棚に積まれている、スキャンもしていない' },
+      { val:'2dto3d',  icon:'🧊', main:'2D図面はあるが3Dデータがない', desc:'CADデータはあるが平面のみ、3Dモデルが欲しい' },
+      { val:'manage',  icon:'🗂', main:'図面が多すぎて管理できていない',desc:'どこに何があるか分からない、バラバラに保管されている' },
+      { val:'reverse', icon:'🔍', main:'現物はあるが図面が存在しない', desc:'設備や部品はあるが、図面が作られていない・紛失した' },
+    ]
+  },
+  {
+    id: 'automation_detail', cond: { situation: 'automation' }, step: '質問 2',
+    text: '自動化したい作業は、どんな内容ですか？', sub: '近い内容を選んでください',
+    choices: [
+      { val:'transfer',   icon:'🚛', main:'搬送・移動の作業',          desc:'部品や製品を運ぶ、並べる、仕分けるなどの繰り返し作業' },
+      { val:'inspection', icon:'🔬', main:'測定・検査の作業',          desc:'品質チェック、寸法測定、調整など精度が必要な工程' },
+      { val:'assembly',   icon:'🔩', main:'加工・組み立ての作業',      desc:'ネジ締め、圧入、接着、はんだ付けなど製造工程' },
+      { val:'undecided',  icon:'💭', main:'まだ決まっていない・相談したい',desc:'どこから自動化するか検討段階、一緒に考えてほしい' },
+    ]
+  },
+  {
+    id: 'optical_detail', cond: { situation: 'optical' }, step: '質問 2',
+    text: '光学・精密設計で、どんな内容ですか？', sub: '近い内容を選んでください',
+    choices: [
+      { val:'optical_new',     icon:'💡', main:'新規の光学系を設計したい', desc:'照明・投射・導光など、光学系を一から設計してほしい' },
+      { val:'optical_review',  icon:'🔎', main:'既存の光学系を見直したい', desc:'性能が出ない、改善したい、シミュレーションで確認したい' },
+      { val:'optical_hud',     icon:'🥽', main:'HUD・ARグラス関連',       desc:'車載HUD、ARグラス向けの光学エンジン・導光板設計など' },
+      { val:'optical_consult', icon:'💬', main:'まず相談したい',           desc:'光学設計が必要かどうかも含めて聞いてほしい' },
+    ]
+  },
+  {
+    id: 'electrical_detail', cond: { situation: 'electrical' }, step: '質問 2',
+    text: '電気回路・基板設計で、どんな内容ですか？', sub: '近い内容を選んでください',
+    choices: [
+      { val:'elec_circuit', icon:'🔌', main:'電気回路・基板を設計したい',    desc:'回路設計、アートワーク指示、USB/DisplayPort/MCUなど高速信号対応' },
+      { val:'elec_fpc',     icon:'📏', main:'FPC（フレキシブル基板）設計',   desc:'薄型・屈曲が必要な部品への配線、LD・受光素子搭載など' },
+      { val:'elec_emi',     icon:'📡', main:'EMI対策・ノイズ問題を解決したい',desc:'放射エミッションの測定・解析・対策検討' },
+      { val:'elec_debug',   icon:'🛠', main:'回路のデバッグ・検証をしたい',  desc:'動かない、誤動作する、オシロスコープを使った原因調査' },
+    ]
+  },
+  {
+    id: 'production_detail', cond: { situation: 'production' }, step: '質問 2',
+    text: '生産ライン・製品設計で、どんな内容ですか？', sub: '近い内容を選んでください',
+    choices: [
+      { val:'prod_line',   icon:'🏗', main:'新規ラインの構築・立ち上げ',  desc:'生産ライン設計、治工具設計、現場立ち上げ支援' },
+      { val:'prod_kaizen', icon:'📉', main:'現場の工数削減・不良低減',    desc:'IE手法による作業改善、省人化、根本原因からの解決' },
+      { val:'prod_design', icon:'✏️', main:'製品設計・構造設計',          desc:'メカ設計、素材・工法選定（ダイカスト・樹脂・板金など）' },
+      { val:'prod_sim',    icon:'💻', main:'解析・シミュレーション',       desc:'応力解析、熱解析、振動解析、衝撃解析による設計品質担保' },
+    ]
+  },
+  {
+    id: 'scale', cond_not: { situation: ['optical','electrical','production'] }, step: '質問 3',
+    text: '設備・作業の規模感を教えてください', sub: 'おおよそで構いません',
+    choices: [
+      { val:'line',    icon:'🏭', main:'ライン・工程単位',   desc:'一つの工程や製造ラインをまるごと改善したい' },
+      { val:'unit',    icon:'🖥', main:'機械・装置ひとつ',   desc:'特定の装置や機械を新設・改造したい' },
+      { val:'part',    icon:'🔩', main:'部品・ユニット単位', desc:'一部の機構だけ作り直したい、部品の図面を起こしたい' },
+      { val:'unknown', icon:'❓', main:'まだわからない',     desc:'規模感から一緒に整理してほしい' },
+    ]
+  },
+];
+
+// ════════════════════════════════════════
+// SERVICES
+// ════════════════════════════════════════
+const SERVICES = {
+  drawing_paper:     { bg:'#E6F1FB', ic:'#0C447C', icon:'📋', title:'紙図面の電子化・デジタル管理',           body:'紙で保管されている図面を電子データ（PDF・DXF等）に変換。検索・共有しやすい形で整理します。',                                           evidence:'精密機器メーカーでの長年の設計業務で、多数の設備図面を管理・更新してきた実績があります。' },
+  drawing_2dto3d:    { bg:'#E1F5EE', ic:'#085041', icon:'📐', title:'2D図面から3Dモデルへの変換',             body:'既存の2D図面をもとに3D CADモデルを作成。干渉チェックや設計変更が格段にやりやすくなります。',                                          evidence:'2D・3D CADを用いた自動機・光学機器・製品設計を複数担当。幅広く対応できます。' },
+  drawing_reverse:   { bg:'#FAEEDA', ic:'#633806', icon:'🔍', title:'現物からの図面起こし（リバースエンジニアリング）', body:'図面のない現物設備を実測・調査し、図面を新規作成。設備の修理・改造・後継機製作に活用できます。',                    evidence:'図面・資料のない設備への対応経験あり。現物から設計情報を復元するノウハウがあります。' },
+  drawing_manage:    { bg:'#E1F5EE', ic:'#085041', icon:'🗂', title:'図面整理・管理体制の構築支援',           body:'バラバラになっている図面を整理し、検索・更新しやすい管理ルールを作ります。電子化と合わせてご提案も可能です。',                          evidence:'複数プロジェクトにわたる設計資料の管理を一貫して担当してきた実績をもとにご支援します。' },
+  automation_transfer:   { bg:'#E1F5EE', ic:'#085041', icon:'⚙', title:'搬送・移動工程の自動化設備設計',     body:'繰り返し搬送作業を自動化する設備を設計します。部品の整列・仕分け・移送など幅広く対応。',                                              evidence:'精密部品の位置決め・搬送を伴う自動調整装置の設計を複数手がけてきた実績があります。' },
+  automation_inspection: { bg:'#FAEEDA', ic:'#633806', icon:'🔬', title:'測定・検査工程の自動化設備設計',    body:'手作業での測定・検査を機械化。ばらつきをなくし、工数削減と品質安定を同時に実現します。',                                              evidence:'精度が求められる計測・検査装置の設計経験があります。光学系を組み込んだ検査装置の対応も可能です。' },
+  automation_assembly:   { bg:'#E1F5EE', ic:'#085041', icon:'🔩', title:'加工・組み立て工程の自動化設備設計', body:'はんだ付け、圧入、組み付けなどの作業を自動化。自動はんだ付け装置の設計実績もあります。',                                        evidence:'自動はんだ付け装置の設計実績あり。PLC制御系の簡易設計にも対応可能です。' },
+  optical_new:       { bg:'#F3EEFF', ic:'#5B2D8E', icon:'💡', title:'光学系の新規設計',                      body:'照明光学系・投射光学系・導光板など、用途に合わせた光学系を一から設計します。LightTools・Zemaxによるシミュレーションも対応。',        evidence:'光通信からHUD投射エンジンまで、多様な光学系設計の実務経験があります。' },
+  optical_review:    { bg:'#F3EEFF', ic:'#5B2D8E', icon:'🔎', title:'光学系の性能改善・見直し',              body:'「性能が出ない」「理由がわからない」という状態から、シミュレーションを使って原因を特定・改善提案します。',                             evidence:'LightTools・Zemax OpticStudioを用いた光学設計最適化の経験があります。' },
+  optical_hud:       { bg:'#F3EEFF', ic:'#5B2D8E', icon:'🥽', title:'HUD・ARグラス向け光学設計',            body:'車載HUDの投射エンジン、ARグラス向けのLED+LCoS光学系・BSA導光板など、先端光学デバイスの設計に対応します。',                         evidence:'HUD用投射エンジン・ARグラス向け光学エンジンの設計実績があります。試作フェーズからの対応も可能です。' },
+  elec_circuit:      { bg:'#FFF8E1', ic:'#7B4F00', icon:'🔌', title:'電気回路・基板設計',                    body:'電気回路の設計からアートワーク指示書の作成まで対応。USB2.0・DisplayPort・MIPI D-PHYなどの高速信号にも対応可能です。',               evidence:'高速デジタル信号を含む基板設計の経験があります。MCU（NXP製）を用いた設計実績もあります。' },
+  elec_fpc:          { bg:'#FFF8E1', ic:'#7B4F00', icon:'📏', title:'FPC（フレキシブル基板）設計',           body:'薄型・屈曲が求められる部位へのFPC設計。LD・受光素子の搭載、0.35mmピッチコネクタ、MIPI信号の取り扱いにも対応します。',              evidence:'精密光学デバイス向けFPCの設計実績あり。Acrova GMMを用いたFPC設計に対応できます。' },
+  elec_emi:          { bg:'#FFF8E1', ic:'#7B4F00', icon:'📡', title:'EMI対策・ノイズ問題の解決',             body:'放射エミッションの測定からスペクトラムアナライザを使った対策検討まで一貫して対応します。',                                             evidence:'EMI測定・対策検討の実務経験があります。設計段階からのEMI対策提案も可能です。' },
+  elec_debug:        { bg:'#FFF8E1', ic:'#7B4F00', icon:'🛠', title:'電気回路のデバッグ・検証',              body:'「動かない」「誤動作する」という状態から、オシロスコープを使った原因調査・検証・修正提案まで対応します。',                           evidence:'回路デバッグ検証（オシロスコープ利用）と電気部品の取り付け・交換作業の実務経験があります。' },
+  prod_line:         { bg:'#E8F5E9', ic:'#1B5E20', icon:'🏗', title:'生産ライン構築・立ち上げ支援',          body:'新規生産ラインの設計・設備選定・治工具設計から、現場への作業指導・初期立ち上げまで一貫して支援します。',                             evidence:'海外工場を含む新規生産ラインの構築・立ち上げ経験があります。生産技術12年の実績をもとに対応します。' },
+  prod_kaizen:       { bg:'#E8F5E9', ic:'#1B5E20', icon:'📉', title:'現場の工数削減・不良低減',              body:'IE手法をベースとした作業改善・省人化の推進。設計側と現場側の両面からアプローチし、根本解決を目指します。',                           evidence:'製造技術10年の経験で、工数低減・不良低減を設計改善と現場改善の双方から進めてきた実績があります。' },
+  prod_design:       { bg:'#E8F5E9', ic:'#1B5E20', icon:'✏️', title:'製品設計・構造設計',                    body:'ダイカスト・樹脂成型・板金など幅広い素材・工法に対応した製品設計。ARグラスなどの先端製品の設計経験もあります。',                  evidence:'量産製品の開発〜量産まで一貫した設計経験があります。生産性と品質を両立した設計が強みです。' },
+  prod_sim:          { bg:'#E8F5E9', ic:'#1B5E20', icon:'💻', title:'設計解析・シミュレーション',            body:'応力解析・熱解析・振動解析・衝撃解析を設計段階で実施し、試作前に問題を検出・設計品質を担保します。',                               evidence:'設計段階での品質担保を目的とした各種CAE解析の実務経験があります。' },
+  repair:            { bg:'#FAEEDA', ic:'#633806', icon:'🔧', title:'古い設備の修理・改造',                  body:'図面も資料も残っていなくても、現物を調査して修理・改造の方針を提案します。現地確認から対応可能です。',                               evidence:'図面や資料のない設備への対応経験あり。現物ベースで修理・改造の方針を組み立てるノウハウがあります。' },
+  scale_line:        { bg:'#E6F1FB', ic:'#0C447C', icon:'🏭', title:'製造ライン全体の自動化・改善提案',      body:'工程単位での課題を整理し、優先度の高い箇所から自動化をご提案。段階的な改善計画も作成します。',                                       evidence:'量産設備設計・生産技術の経験をもとに、ライン全体を見渡した設計アプローチが可能です。' },
+  consult:           { bg:'#E1F5EE', ic:'#085041', icon:'💬', title:'まずは無料ヒアリング・課題整理',        body:'「何から手をつければいいかわからない」という段階から大歓迎です。現状をお聞きし、優先順位の整理からご一緒します。',                     evidence:'メカ・光学・電気・生産技術まで幅広く経験した技術者が、現場目線でお話を伺います。' },
+};
+
+// ════════════════════════════════════════
+// WIZARD LOGIC
+// ════════════════════════════════════════
+let company = '', answers = {}, history = [];
+
+function visibleSteps() {
+  return QUESTIONS.filter(q => {
+    if (q.cond && !Object.entries(q.cond).every(([k,v]) => answers[k] === v)) return false;
+    if (q.cond_not) {
+      for (const [k,v] of Object.entries(q.cond_not)) {
+        const vals = Array.isArray(v) ? v : [v];
+        if (vals.includes(answers[k])) return false;
+      }
+    }
+    return true;
+  });
+}
+function currentQ() { return visibleSteps()[history.length] || null; }
+function totalSteps() {
+  const s = answers.situation;
+  if (s === 'repair' || s === 'consult') return 1;
+  if (s === 'optical' || s === 'electrical' || s === 'production') return 2;
+  return 3;
+}
+function getServices() {
+  const s = [];
+  if (answers.situation === 'repair')  s.push(SERVICES.repair);
+  if (answers.situation === 'consult') s.push(SERVICES.consult);
+  if (answers.drawing_detail === 'paper')   s.push(SERVICES.drawing_paper);
+  if (answers.drawing_detail === '2dto3d')  s.push(SERVICES.drawing_2dto3d);
+  if (answers.drawing_detail === 'reverse') s.push(SERVICES.drawing_reverse);
+  if (answers.drawing_detail === 'manage')  s.push(SERVICES.drawing_manage);
+  if (answers.automation_detail === 'transfer')   s.push(SERVICES.automation_transfer);
+  if (answers.automation_detail === 'inspection') s.push(SERVICES.automation_inspection);
+  if (answers.automation_detail === 'assembly' || answers.automation_detail === 'undecided') s.push(SERVICES.automation_assembly);
+  if (answers.optical_detail === 'optical_new')     s.push(SERVICES.optical_new);
+  if (answers.optical_detail === 'optical_review')  s.push(SERVICES.optical_review);
+  if (answers.optical_detail === 'optical_hud')     s.push(SERVICES.optical_hud);
+  if (answers.optical_detail === 'optical_consult') s.push(SERVICES.consult);
+  if (answers.electrical_detail === 'elec_circuit') s.push(SERVICES.elec_circuit);
+  if (answers.electrical_detail === 'elec_fpc')     s.push(SERVICES.elec_fpc);
+  if (answers.electrical_detail === 'elec_emi')     s.push(SERVICES.elec_emi);
+  if (answers.electrical_detail === 'elec_debug')   s.push(SERVICES.elec_debug);
+  if (answers.production_detail === 'prod_line')    s.push(SERVICES.prod_line);
+  if (answers.production_detail === 'prod_kaizen')  s.push(SERVICES.prod_kaizen);
+  if (answers.production_detail === 'prod_design')  s.push(SERVICES.prod_design);
+  if (answers.production_detail === 'prod_sim')     s.push(SERVICES.prod_sim);
+  if (answers.scale === 'line') s.push(SERVICES.scale_line);
+  if (s.length === 0) s.push(SERVICES.consult);
+  if (s.length < 2)  s.push(SERVICES.drawing_manage);
+  return s.slice(0, 3);
+}
+
+function show(id) {
+  document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
+  const adminEl = document.getElementById('screen-admin');
+  adminEl.style.display = 'none';
+  document.getElementById('main-container').style.display = 'block';
+  if (id === 'screen-admin') {
+    adminEl.style.display = 'block';
+    document.getElementById('main-container').style.display = 'none';
+  } else {
+    document.getElementById(id).classList.add('active');
+  }
+}
+
+function renderWizard() {
+  const q = currentQ();
+  if (!q) { showResult(); return; }
+  const done = history.length, total = totalSteps();
+  const pct = Math.min(100, Math.round((done/total)*100));
+  document.getElementById('step-label').textContent = `質問 ${done+1} / ${total}`;
+  document.getElementById('step-pct').textContent = pct + '%';
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('q-step').textContent = q.step;
+  document.getElementById('q-text').textContent = q.text;
+  document.getElementById('q-sub').textContent = q.sub || '';
+  const wrap = document.getElementById('choices-wrap');
+  wrap.innerHTML = '';
+  q.choices.forEach(c => {
+    const div = document.createElement('button');
+    div.className = 'choice';
+    div.innerHTML = `<div class="choice-icon">${c.icon}</div><div class="choice-body"><div class="choice-main">${c.main}</div><div class="choice-desc">${c.desc}</div></div>`;
+    div.onclick = () => {
+      document.querySelectorAll('.choice').forEach(el => el.classList.remove('selected'));
+      div.classList.add('selected');
+      answers[q.id] = c.val;
+      document.getElementById('btn-next').disabled = false;
+    };
+    wrap.appendChild(div);
+  });
+  document.getElementById('btn-back').disabled = done === 0;
+  document.getElementById('btn-next').disabled = true;
+}
+
+function showResult() {
+  const services = getServices();
+  document.getElementById('result-company').textContent = company ? `${company} 様の診断結果` : '';
+  document.getElementById('service-cards').innerHTML = services.map(sv => `
+    <div class="scard">
+      <div class="scard-head">
+        <div class="scard-icon" style="background:${sv.bg};color:${sv.ic}">${sv.icon}</div>
+        <div class="scard-title">${sv.title}</div>
+      </div>
+      <div class="scard-body">${sv.body}</div>
+      <div class="scard-evidence">${sv.evidence}</div>
+    </div>`).join('');
+  show('screen-result');
+  saveToSupabase(services);
+}
+
+async function saveToSupabase(services) {
+  const msg = document.getElementById('saving-msg');
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/setsubi_shindan`, {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', 'apikey':SUPABASE_KEY, 'Authorization':`Bearer ${SUPABASE_KEY}`, 'Prefer':'return=minimal' },
+      body: JSON.stringify({
+        company_name: company || '（未入力）',
+        situation: answers.situation || '',
+        drawing_detail: answers.drawing_detail || '',
+        automation_detail: answers.automation_detail || '',
+        scale: answers.scale || '',
+        services: services.map(s => s.title).join(' / '),
+      }),
+    });
+    msg.textContent = res.ok ? '✓ 診断結果を送信しました' : '';
+  } catch(e) { msg.textContent = ''; }
+}
+
+function printResult() { window.print(); }
+function restart() {
+  answers = {}; history = []; company = '';
+  document.getElementById('company-input').value = '';
+  show('screen-start');
+}
+
+document.getElementById('btn-start').onclick = () => {
+  company = document.getElementById('company-input').value.trim();
+  show('screen-wizard');
+  renderWizard();
+};
+document.getElementById('company-input').addEventListener('keydown', e => { if(e.key==='Enter') document.getElementById('btn-start').click(); });
+document.getElementById('btn-next').onclick = () => {
+  const q = currentQ();
+  if (!q || !answers[q.id]) return;
+  history.push(q.id);
+  document.getElementById('btn-next').disabled = true;
+  renderWizard();
+};
+document.getElementById('btn-back').onclick = () => {
+  if (history.length === 0) return;
+  const prev = history.pop();
+  delete answers[prev];
+  renderWizard();
+};
+
+// ════════════════════════════════════════
+// ADMIN
+// ════════════════════════════════════════
+const SIT_LABELS = { automation:'自動化・省力化', drawing:'図面まわり', optical:'光学設計', electrical:'電気回路', production:'生産・製品設計', repair:'設備修理・改造', consult:'まず相談' };
+const DET_LABELS = {
+  paper:'紙図面のみ', '2dto3d':'2D→3D化', manage:'管理できない', reverse:'現物のみ',
+  transfer:'搬送・移動', inspection:'測定・検査', assembly:'加工・組立', undecided:'未定',
+  optical_new:'新規設計', optical_review:'見直し', optical_hud:'HUD/AR', optical_consult:'相談',
+  elec_circuit:'回路設計', elec_fpc:'FPC設計', elec_emi:'EMI対策', elec_debug:'デバッグ',
+  prod_line:'ライン構築', prod_kaizen:'工数削減', prod_design:'製品設計', prod_sim:'解析',
+};
+const SCALE_LABELS = { line:'ライン単位', unit:'装置ひとつ', part:'部品単位', unknown:'不明' };
+const SIT_BADGE = { automation:'badge-teal', drawing:'badge-blue', optical:'badge-purple', electrical:'badge-yellow', production:'badge-green', repair:'badge-amber', consult:'badge-gray' };
+
+function goAdmin() { show('screen-admin-login'); }
+function doLogin() {
+  if (document.getElementById('pw-input').value === ADMIN_PASSWORD) {
+    document.getElementById('login-err').style.display = 'none';
+    show('screen-admin');
+    loadData();
+  } else {
+    document.getElementById('login-err').style.display = 'block';
+  }
+}
+function doLogout() {
+  document.getElementById('pw-input').value = '';
+  show('screen-start');
+}
+document.getElementById('pw-input').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+
+async function loadData() {
+  document.getElementById('table-body').innerHTML = '<tr><td colspan="6" class="tbl-loading">読み込み中...</td></tr>';
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/setsubi_shindan?order=created_at.desc&limit=200`, {
+      headers: { 'apikey':SUPABASE_KEY, 'Authorization':`Bearer ${SUPABASE_KEY}` }
+    });
+    const rows = await res.json();
+    renderStats(rows);
+    renderTable(rows);
+  } catch(e) {
+    document.getElementById('table-body').innerHTML = '<tr><td colspan="6" class="tbl-loading">データ取得に失敗しました</td></tr>';
+  }
+}
+
+function renderStats(rows) {
+  document.getElementById('stat-total').textContent = rows.length;
+  const weekAgo = new Date(Date.now() - 7*24*60*60*1000);
+  document.getElementById('stat-week').textContent = rows.filter(r => new Date(r.created_at) > weekAgo).length;
+  document.getElementById('stat-named').textContent = rows.filter(r => r.company_name && r.company_name !== '（未入力）').length;
+  const counts = {};
+  rows.forEach(r => { counts[r.situation] = (counts[r.situation]||0)+1; });
+  const top = Object.entries(counts).sort((a,b)=>b[1]-a[1])[0];
+  document.getElementById('stat-top').textContent = top ? (SIT_LABELS[top[0]]||top[0]) : '—';
+}
+
+function renderTable(rows) {
+  if (!rows.length) { document.getElementById('table-body').innerHTML = '<tr><td colspan="6" class="tbl-loading">まだデータがありません</td></tr>'; return; }
+  document.getElementById('table-body').innerHTML = rows.map(r => {
+    const dt = new Date(r.created_at);
+    const dateStr = `${dt.getMonth()+1}/${dt.getDate()} ${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}`;
+    const sitBadge = SIT_BADGE[r.situation] || 'badge-gray';
+    const detKey = r.drawing_detail || r.automation_detail || r.optical_detail || r.electrical_detail || r.production_detail || '';
+    const svcs = (r.services||'').split(' / ').filter(Boolean);
+    return `<tr>
+      <td>${dateStr}</td>
+      <td>${esc(r.company_name||'—')}</td>
+      <td><span class="badge ${sitBadge}">${SIT_LABELS[r.situation]||r.situation||'—'}</span></td>
+      <td>${DET_LABELS[detKey]||detKey||'—'}</td>
+      <td>${SCALE_LABELS[r.scale]||r.scale||'—'}</td>
+      <td><div class="services-cell">${svcs.map(s=>`<span class="badge badge-teal">${esc(s)}</span>`).join('')}</div></td>
+    </tr>`;
+  }).join('');
+}
+function esc(s){ return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+</script>
+</body>
+</html>
