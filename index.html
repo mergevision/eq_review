@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>設備・技術サービス診断 | MergeVision</title>
-<meta name="description" content="設備設計・図面電子化・光学設計・電気回路・生産技術——3問に答えるだけで最適なサービスをご提案します。">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -86,13 +85,12 @@ body { font-family: 'Noto Sans JP', sans-serif; background: var(--bg); color: va
 .svc-title { font-size: 14px; font-weight: 700; color: var(--text); }
 .svc-body { font-size: 13px; color: var(--text-mid); line-height: 1.7; margin-bottom: 8px; }
 .svc-evidence { font-size: 12px; color: var(--teal-dark); background: var(--teal-light); padding: 8px 11px; border-radius: 8px; line-height: 1.6; }
-
-/* ── CTA */
 .cta-box { background: var(--teal-light); border: 1px solid var(--teal-border); border-radius: var(--radius-lg); padding: 1.5rem; text-align: center; margin-bottom: 1.5rem; }
 .cta-box h3 { font-size: 16px; font-weight: 700; color: var(--teal-deep); margin-bottom: 6px; }
 .cta-box p { font-size: 13px; color: var(--teal-dark); line-height: 1.65; }
 
 /* ── Admin */
+.admin-container { max-width: 960px; margin: 0 auto; padding: 1.5rem 1rem 4rem; }
 .admin-header { background: var(--teal-deep); color: #fff; padding: 14px 16px; border-radius: var(--radius-lg) var(--radius-lg) 0 0; display: flex; align-items: center; justify-content: space-between; margin: -1.5rem -1.5rem 1.5rem; }
 .admin-header h2 { font-size: 15px; font-weight: 700; }
 .stats-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-bottom: 1.5rem; }
@@ -105,7 +103,7 @@ table.results-tbl th { background: var(--bg); padding: 7px 10px; text-align: lef
 table.results-tbl td { padding: 9px 10px; border-bottom: 1px solid var(--border); vertical-align: middle; }
 table.results-tbl tr:last-child td { border-bottom: none; }
 table.results-tbl tr:hover td { background: var(--bg); }
-.pill { display: inline-block; font-size: 10px; padding: 2px 8px; border-radius: 20px; font-weight: 500; white-space: nowrap; }
+.pill { display: inline-block; font-size: 10px; padding: 2px 8px; border-radius: 20px; font-weight: 500; white-space: nowrap; margin: 1px; }
 .pill-teal   { background: var(--teal-light);   color: var(--teal-dark); }
 .pill-blue   { background: var(--blue-light);   color: var(--blue); }
 .pill-amber  { background: var(--amber-light);  color: var(--amber); }
@@ -116,7 +114,7 @@ table.results-tbl tr:hover td { background: var(--bg); }
 
 /* ── Utils */
 .loading { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 2rem; color: var(--text-muted); font-size: 14px; }
-.spinner { width: 20px; height: 20px; border: 2px solid var(--teal-border); border-top-color: var(--teal); border-radius: 50%; animation: spin .8s linear infinite; }
+.spinner { width: 18px; height: 18px; border: 2px solid var(--teal-border); border-top-color: var(--teal); border-radius: 50%; animation: spin .8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .flex-row { display: flex; gap: 8px; align-items: center; }
 .flex-center { justify-content: center; }
@@ -125,7 +123,11 @@ table.results-tbl tr:hover td { background: var(--bg); }
 .mt-2 { margin-top: 1.25rem; }
 .saved-note { font-size: 11px; color: var(--text-muted); text-align: center; margin-top: 8px; }
 
-@media (max-width: 480px) {
+/* 管理画面のときはcontainerを広くする */
+body.is-admin .container { max-width: 960px; }
+body.is-admin .site-header-inner { max-width: 960px; }
+
+@media (max-width: 600px) {
   .stats-grid { grid-template-columns: 1fr 1fr; }
   .btn-lg { padding: 12px 24px; font-size: 14px; }
 }
@@ -135,12 +137,12 @@ table.results-tbl tr:hover td { background: var(--bg); }
 
 <header class="site-header">
   <div class="site-header-inner">
-    <div class="site-logo">MergeVision <span>設備・技術サービス診断</span></div>
-    <button class="btn btn-secondary" style="font-size:12px;padding:5px 12px" onclick="showAdminLogin()">🔒 管理画面</button>
+    <div class="site-logo" id="header-logo">MergeVision <span>設備・技術サービス診断</span></div>
+    <button class="btn btn-secondary" style="font-size:12px;padding:5px 12px" id="header-btn" onclick="showAdminLogin()">🔒 管理画面</button>
   </div>
 </header>
 
-<div class="container">
+<div class="container" id="main-container">
 
   <!-- START -->
   <div id="sc-entry" class="screen active">
@@ -150,13 +152,38 @@ table.results-tbl tr:hover td { background: var(--bg); }
       <p style="font-size:14px;color:var(--text-muted);line-height:1.7">3〜4問に答えるだけで、お役に立てるサービスをご提案します。<br>ヒアリング・お見積りは無料です。</p>
     </div>
     <div class="card">
-      <p style="font-size:14px;font-weight:700;margin-bottom:1rem">まず会社名を教えてください（任意）</p>
+      <p style="font-size:14px;font-weight:700;margin-bottom:1rem">まず簡単に教えてください</p>
       <div class="field">
-        <label>会社名</label>
+        <label>会社名 <span style="color:#E24B4A">*</span></label>
         <input type="text" id="f-company" placeholder="例：株式会社〇〇製作所" maxlength="80" autocomplete="organization">
       </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="field">
+          <label>従業員数 <span style="color:#E24B4A">*</span></label>
+          <select id="f-size" style="width:100%;padding:10px 13px;border:1px solid var(--border);border-radius:var(--radius);font-size:14px;font-family:inherit;background:var(--surface);color:var(--text);outline:none">
+            <option value="">選択してください</option>
+            <option value="1-10">1〜10名</option>
+            <option value="11-30">11〜30名</option>
+            <option value="31-100">31〜100名</option>
+            <option value="101+">101名以上</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>業種 <span style="color:#E24B4A">*</span></label>
+          <select id="f-industry" style="width:100%;padding:10px 13px;border:1px solid var(--border);border-radius:var(--radius);font-size:14px;font-family:inherit;background:var(--surface);color:var(--text);outline:none">
+            <option value="">選択してください</option>
+            <option value="製造">製造</option>
+            <option value="IT・通信">IT・通信</option>
+            <option value="小売・流通">小売・流通</option>
+            <option value="医療・福祉">医療・福祉</option>
+            <option value="建設">建設</option>
+            <option value="サービス">サービス</option>
+            <option value="その他">その他</option>
+          </select>
+        </div>
+      </div>
+      <p id="entry-err" class="err-msg" style="display:none;margin-bottom:.75rem"></p>
       <button class="btn btn-primary btn-lg" style="width:100%;justify-content:center" onclick="entryNext()">診断をはじめる →</button>
-      <p style="font-size:11px;color:var(--text-muted);text-align:center;margin-top:10px">個人情報は収集しません。会社名は結果表示のみに使用します。</p>
     </div>
   </div>
 
@@ -205,13 +232,13 @@ table.results-tbl tr:hover td { background: var(--bg); }
       </div>
       <p id="admin-err" class="err-msg" style="display:none">パスワードが違います</p>
       <div class="flex-row mt-2">
-        <button class="btn btn-secondary" onclick="showScreen('sc-entry')">← 戻る</button>
+        <button class="btn btn-secondary" onclick="showScreen('sc-entry');exitAdmin()">← 戻る</button>
         <button class="btn btn-primary" onclick="adminLogin()">ログイン</button>
       </div>
     </div>
   </div>
 
-  <!-- ADMIN -->
+  <!-- ADMIN DASHBOARD -->
   <div id="sc-admin" class="screen">
     <div class="card">
       <div class="admin-header">
@@ -227,7 +254,7 @@ table.results-tbl tr:hover td { background: var(--bg); }
         <div class="table-wrap">
           <table class="results-tbl">
             <thead><tr>
-              <th>日時</th><th>会社名</th><th>お困りごと</th><th>詳細</th><th>規模</th><th>提案サービス</th>
+              <th>日時</th><th>会社名</th><th>従業員数</th><th>業種</th><th>お困りごと</th><th>詳細</th><th>規模</th><th>提案サービス</th>
             </tr></thead>
             <tbody id="admin-tbody"></tbody>
           </table>
@@ -236,13 +263,12 @@ table.results-tbl tr:hover td { background: var(--bg); }
     </div>
   </div>
 
-</div>
+</div><!-- /container -->
 
 <script>
-const SUPABASE_URL = 'https://wvhwxpookqktbzfofxcy.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind2aHd4cG9va3FrdGJ6Zm9meGN5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwNzM4ODAsImV4cCI6MjA5NjY0OTg4MH0.wzKen3asNkQ0zttVvUnpzmJZRUjTf7fzHBd3Go23ptE';
-const ADMIN_PASSWORD = 'admin1234';
-
+// ════════════════════════════
+// QUESTIONS & SERVICES（省略なし）
+// ════════════════════════════
 const QUESTIONS = [
   { id:'situation', cat:'質問 1', text:'現在、どんな状況で困っていますか？', sub:'当てはまるものをひとつ選んでください',
     choices:[
@@ -265,9 +291,9 @@ const QUESTIONS = [
   },
   { id:'automation_detail', cond:{situation:'automation'}, cat:'質問 2', text:'自動化したい作業は、どんな内容ですか？', sub:'近い内容を選んでください',
     choices:[
-      { val:'transfer',   icon:'🚛', main:'搬送・移動の作業',            desc:'部品や製品を運ぶ、並べる、仕分けるなどの繰り返し作業' },
-      { val:'inspection', icon:'🔬', main:'測定・検査の作業',            desc:'品質チェック、寸法測定、調整など精度が必要な工程' },
-      { val:'assembly',   icon:'🔩', main:'加工・組み立ての作業',        desc:'ネジ締め、圧入、接着、はんだ付けなど製造工程' },
+      { val:'transfer',   icon:'🚛', main:'搬送・移動の作業',             desc:'部品や製品を運ぶ、並べる、仕分けるなどの繰り返し作業' },
+      { val:'inspection', icon:'🔬', main:'測定・検査の作業',             desc:'品質チェック、寸法測定、調整など精度が必要な工程' },
+      { val:'assembly',   icon:'🔩', main:'加工・組み立ての作業',         desc:'ネジ締め、圧入、接着、はんだ付けなど製造工程' },
       { val:'undecided',  icon:'💭', main:'まだ決まっていない・相談したい',desc:'どこから自動化するか検討段階、一緒に考えてほしい' },
     ]
   },
@@ -306,30 +332,33 @@ const QUESTIONS = [
 ];
 
 const SERVICES = {
-  drawing_paper:         { bg:'#E6F1FB', ic:'#185FA5', icon:'📋', title:'紙図面の電子化・デジタル管理',              body:'紙で保管されている図面を電子データ（PDF・DXF等）に変換。検索・共有しやすい形で整理します。',                                           evidence:'精密機器メーカーでの長年の設計業務で、多数の設備図面を管理・更新してきた実績があります。' },
-  drawing_2dto3d:        { bg:'#E1F5EE', ic:'#0F6E56', icon:'📐', title:'2D図面から3Dモデルへの変換',                body:'既存の2D図面をもとに3D CADモデルを作成。干渉チェックや設計変更が格段にやりやすくなります。',                                          evidence:'2D・3D CADを用いた自動機・光学機器・製品設計を複数担当。幅広く対応できます。' },
-  drawing_reverse:       { bg:'#FAEEDA', ic:'#BA7517', icon:'🔍', title:'現物からの図面起こし（リバースエンジニアリング）',body:'図面のない現物設備を実測・調査し、図面を新規作成。設備の修理・改造・後継機製作に活用できます。',                    evidence:'図面・資料のない設備への対応経験あり。現物から設計情報を復元するノウハウがあります。' },
-  drawing_manage:        { bg:'#E1F5EE', ic:'#0F6E56', icon:'🗂', title:'図面整理・管理体制の構築支援',              body:'バラバラになっている図面を整理し、検索・更新しやすい管理ルールを作ります。電子化と合わせてご提案も可能です。',                          evidence:'複数プロジェクトにわたる設計資料の管理を一貫して担当してきた実績をもとにご支援します。' },
-  automation_transfer:   { bg:'#E1F5EE', ic:'#0F6E56', icon:'⚙️', title:'搬送・移動工程の自動化設備設計',           body:'繰り返し搬送作業を自動化する設備を設計します。部品の整列・仕分け・移送など幅広く対応。',                                              evidence:'精密部品の位置決め・搬送を伴う自動調整装置の設計を複数手がけてきた実績があります。' },
-  automation_inspection: { bg:'#FAEEDA', ic:'#BA7517', icon:'🔬', title:'測定・検査工程の自動化設備設計',            body:'手作業での測定・検査を機械化。ばらつきをなくし、工数削減と品質安定を同時に実現します。',                                              evidence:'精度が求められる計測・検査装置の設計経験があります。光学系を組み込んだ検査装置の対応も可能です。' },
-  automation_assembly:   { bg:'#E1F5EE', ic:'#0F6E56', icon:'🔩', title:'加工・組み立て工程の自動化設備設計',        body:'はんだ付け、圧入、組み付けなどの作業を自動化。自動はんだ付け装置の設計実績もあります。',                                            evidence:'自動はんだ付け装置の設計実績あり。PLC制御系の簡易設計にも対応可能です。' },
-  optical_new:           { bg:'#F3EEFF', ic:'#5B2D8E', icon:'💡', title:'光学系の新規設計',                         body:'照明光学系・投射光学系・導光板など、用途に合わせた光学系を一から設計します。LightTools・Zemaxによるシミュレーションも対応。',        evidence:'光通信からHUD投射エンジンまで、多様な光学系設計の実務経験があります。' },
-  optical_review:        { bg:'#F3EEFF', ic:'#5B2D8E', icon:'🔎', title:'光学系の性能改善・見直し',                 body:'「性能が出ない」「理由がわからない」という状態から、シミュレーションを使って原因を特定・改善提案します。',                             evidence:'LightTools・Zemax OpticStudioを用いた光学設計最適化の経験があります。' },
-  optical_hud:           { bg:'#F3EEFF', ic:'#5B2D8E', icon:'🥽', title:'HUD・ARグラス向け光学設計',               body:'車載HUDの投射エンジン、ARグラス向けのLED+LCoS光学系・BSA導光板など、先端光学デバイスの設計に対応します。',                         evidence:'HUD用投射エンジン・ARグラス向け光学エンジンの設計実績があります。試作フェーズからの対応も可能です。' },
-  elec_circuit:          { bg:'#FFF8E1', ic:'#7B4F00', icon:'🔌', title:'電気回路・基板設計',                       body:'電気回路の設計からアートワーク指示書作成まで。USB2.0・DisplayPort・MIPI D-PHYなどの高速信号にも対応可能です。',                       evidence:'高速デジタル信号を含む基板設計の経験があります。MCU（NXP製）を用いた設計実績もあります。' },
-  elec_fpc:              { bg:'#FFF8E1', ic:'#7B4F00', icon:'📏', title:'FPC（フレキシブル基板）設計',              body:'薄型・屈曲が求められる部位へのFPC設計。LD・受光素子の搭載、0.35mmピッチコネクタ、MIPI信号の取り扱いにも対応します。',              evidence:'精密光学デバイス向けFPCの設計実績あり。Acrova GMMを用いたFPC設計に対応できます。' },
-  elec_emi:              { bg:'#FFF8E1', ic:'#7B4F00', icon:'📡', title:'EMI対策・ノイズ問題の解決',                body:'放射エミッションの測定からスペクトラムアナライザを使った対策検討まで一貫して対応します。',                                             evidence:'EMI測定・対策検討の実務経験があります。設計段階からのEMI対策提案も可能です。' },
-  elec_debug:            { bg:'#FFF8E1', ic:'#7B4F00', icon:'🛠', title:'電気回路のデバッグ・検証',                 body:'「動かない」「誤動作する」という状態から、オシロスコープを使った原因調査・検証・修正提案まで対応します。',                           evidence:'回路デバッグ検証（オシロスコープ利用）と電気部品の取り付け・交換作業の実務経験があります。' },
-  prod_line:             { bg:'#E8F5E9', ic:'#1B5E20', icon:'🏗', title:'生産ライン構築・立ち上げ支援',             body:'新規生産ラインの設計・設備選定・治工具設計から、現場への作業指導・初期立ち上げまで一貫して支援します。',                             evidence:'海外工場を含む新規生産ラインの構築・立ち上げ経験があります。生産技術12年の実績をもとに対応します。' },
-  prod_kaizen:           { bg:'#E8F5E9', ic:'#1B5E20', icon:'📉', title:'現場の工数削減・不良低減',                 body:'IE手法をベースとした作業改善・省人化の推進。設計側と現場側の両面からアプローチし、根本解決を目指します。',                           evidence:'製造技術10年の経験で、工数低減・不良低減を設計改善と現場改善の双方から進めてきた実績があります。' },
-  prod_design:           { bg:'#E8F5E9', ic:'#1B5E20', icon:'✏️', title:'製品設計・構造設計',                       body:'ダイカスト・樹脂成型・板金など幅広い素材・工法に対応した製品設計。ARグラスなどの先端製品の設計経験もあります。',                  evidence:'量産製品の開発〜量産まで一貫した設計経験があります。生産性と品質を両立した設計が強みです。' },
-  prod_sim:              { bg:'#E8F5E9', ic:'#1B5E20', icon:'💻', title:'設計解析・シミュレーション',               body:'応力解析・熱解析・振動解析・衝撃解析を設計段階で実施し、試作前に問題を検出・設計品質を担保します。',                               evidence:'設計段階での品質担保を目的とした各種CAE解析の実務経験があります。' },
-  repair:                { bg:'#FAEEDA', ic:'#BA7517', icon:'🔧', title:'古い設備の修理・改造',                     body:'図面も資料も残っていなくても、現物を調査して修理・改造の方針を提案します。現地確認から対応可能です。',                               evidence:'図面や資料のない設備への対応経験あり。現物ベースで修理・改造の方針を組み立てるノウハウがあります。' },
-  scale_line:            { bg:'#E6F1FB', ic:'#185FA5', icon:'🏭', title:'製造ライン全体の自動化・改善提案',         body:'工程単位での課題を整理し、優先度の高い箇所から自動化をご提案。段階的な改善計画も作成します。',                                       evidence:'量産設備設計・生産技術の経験をもとに、ライン全体を見渡した設計アプローチが可能です。' },
-  consult:               { bg:'#E1F5EE', ic:'#0F6E56', icon:'💬', title:'まずは無料ヒアリング・課題整理',           body:'「何から手をつければいいかわからない」という段階から大歓迎です。現状をお聞きし、優先順位の整理からご一緒します。',                     evidence:'メカ・光学・電気・生産技術まで幅広く経験した技術者が、現場目線でお話を伺います。' },
+  drawing_paper:         { bg:'#E6F1FB', ic:'#185FA5', icon:'📋', title:'紙図面の電子化・デジタル管理',                   body:'紙で保管されている図面を電子データ（PDF・DXF等）に変換。検索・共有しやすい形で整理します。',                                           evidence:'精密機器メーカーでの長年の設計業務で、多数の設備図面を管理・更新してきた実績があります。' },
+  drawing_2dto3d:        { bg:'#E1F5EE', ic:'#0F6E56', icon:'📐', title:'2D図面から3Dモデルへの変換',                      body:'既存の2D図面をもとに3D CADモデルを作成。干渉チェックや設計変更が格段にやりやすくなります。',                                          evidence:'2D・3D CADを用いた自動機・光学機器・製品設計を複数担当。幅広く対応できます。' },
+  drawing_reverse:       { bg:'#FAEEDA', ic:'#BA7517', icon:'🔍', title:'現物からの図面起こし（リバースエンジニアリング）',  body:'図面のない現物設備を実測・調査し、図面を新規作成。設備の修理・改造・後継機製作に活用できます。',                                    evidence:'図面・資料のない設備への対応経験あり。現物から設計情報を復元するノウハウがあります。' },
+  drawing_manage:        { bg:'#E1F5EE', ic:'#0F6E56', icon:'🗂', title:'図面整理・管理体制の構築支援',                    body:'バラバラになっている図面を整理し、検索・更新しやすい管理ルールを作ります。電子化と合わせてご提案も可能です。',                          evidence:'複数プロジェクトにわたる設計資料の管理を一貫して担当してきた実績をもとにご支援します。' },
+  automation_transfer:   { bg:'#E1F5EE', ic:'#0F6E56', icon:'⚙️', title:'搬送・移動工程の自動化設備設計',                  body:'繰り返し搬送作業を自動化する設備を設計します。部品の整列・仕分け・移送など幅広く対応。',                                              evidence:'精密部品の位置決め・搬送を伴う自動調整装置の設計を複数手がけてきた実績があります。' },
+  automation_inspection: { bg:'#FAEEDA', ic:'#BA7517', icon:'🔬', title:'測定・検査工程の自動化設備設計',                   body:'手作業での測定・検査を機械化。ばらつきをなくし、工数削減と品質安定を同時に実現します。',                                              evidence:'精度が求められる計測・検査装置の設計経験があります。光学系を組み込んだ検査装置の対応も可能です。' },
+  automation_assembly:   { bg:'#E1F5EE', ic:'#0F6E56', icon:'🔩', title:'加工・組み立て工程の自動化設備設計',               body:'はんだ付け、圧入、組み付けなどの作業を自動化。自動はんだ付け装置の設計実績もあります。',                                            evidence:'自動はんだ付け装置の設計実績あり。PLC制御系の簡易設計にも対応可能です。' },
+  optical_new:           { bg:'#F3EEFF', ic:'#5B2D8E', icon:'💡', title:'光学系の新規設計',                                 body:'照明光学系・投射光学系・導光板など、用途に合わせた光学系を一から設計します。LightToolsによるシミュレーションも対応。',               evidence:'HUD投射エンジンやARグラス向け光学エンジンなど、多様な光学系設計の実務経験があります。' },
+  optical_review:        { bg:'#F3EEFF', ic:'#5B2D8E', icon:'🔎', title:'光学系の性能改善・見直し',                         body:'「性能が出ない」「理由がわからない」という状態から、シミュレーションを使って原因を特定・改善提案します。',                             evidence:'LightToolsを用いた光学設計最適化の経験があります。' },
+  optical_hud:           { bg:'#F3EEFF', ic:'#5B2D8E', icon:'🥽', title:'HUD・ARグラス向け光学設計',                       body:'車載HUDの投射エンジン、ARグラス向けのLED+LCoS光学系・BSA導光板など、先端光学デバイスの設計に対応します。',                         evidence:'HUD用投射エンジン・ARグラス向け光学エンジンの設計実績があります。試作フェーズからの対応も可能です。' },
+  elec_circuit:          { bg:'#FFF8E1', ic:'#7B4F00', icon:'🔌', title:'電気回路・基板設計',                               body:'電気回路の設計からアートワーク指示書作成まで。USB2.0・DisplayPort・MIPI D-PHYなどの高速信号にも対応可能です。',                       evidence:'高速デジタル信号を含む基板設計の経験があります。MCU（NXP製）を用いた設計実績もあります。' },
+  elec_fpc:              { bg:'#FFF8E1', ic:'#7B4F00', icon:'📏', title:'FPC（フレキシブル基板）設計',                      body:'薄型・屈曲が求められる部位へのFPC設計。LD・受光素子の搭載、0.35mmピッチコネクタ、MIPI信号の取り扱いにも対応します。',              evidence:'精密光学デバイス向けFPCの設計実績あり。Acrova GMMを用いたFPC設計に対応できます。' },
+  elec_emi:              { bg:'#FFF8E1', ic:'#7B4F00', icon:'📡', title:'EMI対策・ノイズ問題の調査支援',                     body:'放射エミッションの測定及び結果を基に、スペクトラムアナライザを用いた要因解析の対応をいたします。',                                      evidence:'EMI測定・要因解析の実務経験があります。' },
+  elec_debug:            { bg:'#FFF8E1', ic:'#7B4F00', icon:'🛠', title:'電気回路のデバッグ・検証',                         body:'「動かない」「誤動作する」という状態から、オシロスコープを使った原因調査・検証・修正提案まで対応します。',                           evidence:'回路デバッグ検証（オシロスコープ利用）と電気部品の取り付け・交換作業の実務経験があります。' },
+  prod_line:             { bg:'#E8F5E9', ic:'#1B5E20', icon:'🏗', title:'生産ライン構築・立ち上げ支援',                     body:'新規生産ラインの設計・設備選定・治工具設計から、現場への作業指導・初期立ち上げまで一貫して支援します。',                             evidence:'海外工場を含む新規生産ラインの構築・立ち上げ経験があります。生産技術12年の実績をもとに対応します。' },
+  prod_kaizen:           { bg:'#E8F5E9', ic:'#1B5E20', icon:'📉', title:'現場の工数削減・不良低減',                         body:'IE手法をベースとした作業改善・省人化の推進。設計側と現場側の両面からアプローチし、根本解決を目指します。',                           evidence:'製造技術10年の経験で、工数低減・不良低減を設計改善と現場改善の双方から進めてきた実績があります。' },
+  prod_design:           { bg:'#E8F5E9', ic:'#1B5E20', icon:'✏️', title:'製品設計・構造設計',                               body:'ダイカスト・樹脂成型・板金など幅広い素材・工法に対応した製品設計。ARグラスなどの先端製品の設計経験もあります。',                  evidence:'量産製品の開発〜量産まで一貫した設計経験があります。生産性と品質を両立した設計が強みです。' },
+  prod_sim:              { bg:'#E8F5E9', ic:'#1B5E20', icon:'💻', title:'設計解析・シミュレーション',                       body:'応力解析・熱解析・振動解析・衝撃解析を設計段階で実施し、試作前に問題を検出・設計品質を担保します。',                               evidence:'設計段階での品質担保を目的とした各種CAE解析の実務経験があります。' },
+  repair:                { bg:'#FAEEDA', ic:'#BA7517', icon:'🔧', title:'古い設備の修理・改造',                              body:'図面も資料も残っていなくても、現物を調査して修理・改造の方針を提案します。現地確認から対応可能です。',                               evidence:'図面や資料のない設備への対応経験あり。現物ベースで修理・改造の方針を組み立てるノウハウがあります。' },
+  scale_line:            { bg:'#E6F1FB', ic:'#185FA5', icon:'🏭', title:'製造ライン全体の自動化・改善提案',                 body:'工程単位での課題を整理し、優先度の高い箇所から自動化をご提案。段階的な改善計画も作成します。',                                       evidence:'量産設備設計・生産技術の経験をもとに、ライン全体を見渡した設計アプローチが可能です。' },
+  consult:               { bg:'#E1F5EE', ic:'#0F6E56', icon:'💬', title:'まずは無料ヒアリング・課題整理',                   body:'「何から手をつければいいかわからない」という段階から大歓迎です。現状をお聞きし、優先順位の整理からご一緒します。',                     evidence:'メカ・光学・電気・生産技術まで幅広く経験した技術者が、現場目線でお話を伺います。' },
 };
 
-let company='', answers={}, history=[];
+// ════════════════════════════
+// WIZARD
+// ════════════════════════════
+let company='', empSize='', industry='', answers={}, history=[];
 
 function visibleSteps(){
   return QUESTIONS.filter(q=>{
@@ -368,10 +397,9 @@ function getServices(){
   if(answers.production_detail==='prod_kaizen')  s.push(SERVICES.prod_kaizen);
   if(answers.production_detail==='prod_design')  s.push(SERVICES.prod_design);
   if(answers.production_detail==='prod_sim')     s.push(SERVICES.prod_sim);
-  if(answers.scale==='line') s.push(SERVICES.scale_line);
+  if(answers.situation==='automation' && answers.scale==='line') s.push(SERVICES.scale_line);
   if(s.length===0) s.push(SERVICES.consult);
-  if(s.length<2)   s.push(SERVICES.drawing_manage);
-  return s.slice(0,3);
+  return s.slice(0,2);
 }
 
 function showScreen(id){
@@ -379,7 +407,17 @@ function showScreen(id){
   document.getElementById(id).classList.add('active');
 }
 function entryNext(){
-  company=document.getElementById('f-company').value.trim();
+  const c=document.getElementById('f-company').value.trim();
+  const s=document.getElementById('f-size').value;
+  const i=document.getElementById('f-industry').value;
+  const err=document.getElementById('entry-err');
+  if(!c||!s||!i){
+    err.textContent='会社名・従業員数・業種はすべて入力してください';
+    err.style.display='block';
+    return;
+  }
+  err.style.display='none';
+  company=c; empSize=s; industry=i;
   showScreen('sc-wizard'); renderWizard();
 }
 document.getElementById('f-company').addEventListener('keydown',e=>{if(e.key==='Enter')entryNext();});
@@ -413,16 +451,8 @@ function renderWizard(){
   document.getElementById('btn-back').disabled=done===0;
   document.getElementById('btn-next').disabled=true;
 }
-function wizNext(){
-  const q=currentQ(); if(!q||!answers[q.id])return;
-  history.push(q.id);
-  document.getElementById('btn-next').disabled=true;
-  renderWizard();
-}
-function wizBack(){
-  if(history.length===0)return;
-  const prev=history.pop(); delete answers[prev]; renderWizard();
-}
+function wizNext(){const q=currentQ();if(!q||!answers[q.id])return;history.push(q.id);document.getElementById('btn-next').disabled=true;renderWizard();}
+function wizBack(){if(history.length===0)return;const prev=history.pop();delete answers[prev];renderWizard();}
 
 function showResult(){
   const svcs=getServices();
@@ -437,33 +467,45 @@ function showResult(){
       <div class="svc-evidence">${sv.evidence}</div>
     </div>`).join('');
   showScreen('sc-result');
-  saveToSupabase(svcs);
+  saveData(svcs);
 }
 
-async function saveToSupabase(svcs){
-  const note=document.getElementById('saved-note');
+const SUPABASE_URL='https://wvhwxpookqktbzfofxcy.supabase.co';
+const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind2aHd4cG9va3FrdGJ6Zm9meGN5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwNzM4ODAsImV4cCI6MjA5NjY0OTg4MH0.wzKen3asNkQ0zttVvUnpzmJZRUjTf7fzHBd3Go23ptE';
+
+async function saveData(svcs){
+  const detail=answers.drawing_detail||answers.automation_detail||answers.optical_detail||answers.electrical_detail||answers.production_detail||'';
   try{
     const res=await fetch(`${SUPABASE_URL}/rest/v1/setsubi_shindan`,{
       method:'POST',
       headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY,'Authorization':`Bearer ${SUPABASE_KEY}`,'Prefer':'return=minimal'},
-      body:JSON.stringify({company_name:company||'（未入力）',situation:answers.situation||'',drawing_detail:answers.drawing_detail||'',automation_detail:answers.automation_detail||'',scale:answers.scale||'',services:svcs.map(s=>s.title).join(' / ')}),
+      body:JSON.stringify({
+        company_name: company||'（未入力）',
+        emp_size:     empSize||'',
+        industry:     industry||'',
+        situation:    answers.situation||'',
+        drawing_detail:    answers.drawing_detail||'',
+        automation_detail: answers.automation_detail||'',
+        scale:        answers.scale||'',
+        services:     svcs.map(s=>s.title).join(' / '),
+      }),
     });
-    note.textContent=res.ok?'✓ 診断結果を送信しました':'';
-  }catch(e){note.textContent='';}
+    if(res.ok) document.getElementById('saved-note').textContent='✓ 診断結果を送信しました';
+  }catch(e){console.error(e);}
 }
 
-function restart(){answers={};history=[];company='';document.getElementById('f-company').value='';showScreen('sc-entry');}
+function restart(){answers={};history=[];exitAdmin();showScreen('sc-wizard');renderWizard();}
 
+// ── PDF
 async function savePDF(){
   const btn=document.getElementById('btn-pdf');
-  btn.disabled=true; btn.textContent='⏳ 生成中...';
+  btn.disabled=true;btn.textContent='⏳ 生成中...';
   try{
     const el=document.getElementById('sc-result');
     const canvas=await html2canvas(el,{scale:2,useCORS:true,backgroundColor:'#f8fafa',windowWidth:680,scrollX:0,scrollY:-window.scrollY});
     const{jsPDF}=window.jspdf;
     const pdf=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
-    const pw=210,ph=297;
-    const imgW=pw,imgH=canvas.height*(pw/canvas.width);
+    const pw=210,ph=297,imgW=pw,imgH=canvas.height*(pw/canvas.width);
     if(imgH<=ph){
       pdf.addImage(canvas.toDataURL('image/jpeg',0.93),'JPEG',0,0,imgW,imgH);
     }else{
@@ -471,8 +513,7 @@ async function savePDF(){
       while(y<imgH){
         const srcY=y*canvas.width/imgW;
         const srcH=Math.min(ph*canvas.width/imgW,canvas.height-srcY);
-        const pc=document.createElement('canvas');
-        pc.width=canvas.width; pc.height=srcH;
+        const pc=document.createElement('canvas');pc.width=canvas.width;pc.height=srcH;
         pc.getContext('2d').drawImage(canvas,0,srcY,canvas.width,srcH,0,0,canvas.width,srcH);
         if(y>0)pdf.addPage();
         pdf.addImage(pc.toDataURL('image/jpeg',0.93),'JPEG',0,0,imgW,srcH*imgW/canvas.width);
@@ -484,63 +525,133 @@ async function savePDF(){
   finally{btn.disabled=false;btn.textContent='📄 PDFで保存';}
 }
 
-// ── Admin
+// ════════════════════════════
+// ADMIN
+// ════════════════════════════
 const SIT_LABELS={automation:'自動化・省力化',drawing:'図面まわり',optical:'光学設計',electrical:'電気回路',production:'生産・製品設計',repair:'設備修理・改造',consult:'まず相談'};
 const SIT_PILL={automation:'pill-teal',drawing:'pill-blue',optical:'pill-purple',electrical:'pill-yellow',production:'pill-green',repair:'pill-amber',consult:'pill-gray'};
 const DET_LABELS={paper:'紙図面のみ','2dto3d':'2D→3D',manage:'管理できない',reverse:'現物のみ',transfer:'搬送・移動',inspection:'測定・検査',assembly:'加工・組立',undecided:'未定',optical_new:'新規設計',optical_review:'見直し',optical_hud:'HUD/AR',optical_consult:'相談',elec_circuit:'回路設計',elec_fpc:'FPC',elec_emi:'EMI対策',elec_debug:'デバッグ',prod_line:'ライン構築',prod_kaizen:'工数削減',prod_design:'製品設計',prod_sim:'解析'};
 const SCALE_LABELS={line:'ライン単位',unit:'装置ひとつ',part:'部品単位',unknown:'不明'};
-let adminRows=[];
+const ADMIN_PASSWORD = 'admin1234';
+let adminRows=[], adminPw='';
 
-function showAdminLogin(){showScreen('sc-admin-login');}
-function adminLogin(){
-  if(document.getElementById('admin-pw').value===ADMIN_PASSWORD){
-    document.getElementById('admin-err').style.display='none';
-    showScreen('sc-admin'); loadAdmin();
-  }else{document.getElementById('admin-err').style.display='block';}
+function showAdminLogin(){
+  document.getElementById('admin-pw').value='';
+  document.getElementById('admin-err').style.display='none';
+  showScreen('sc-admin-login');
 }
-function adminLogout(){document.getElementById('admin-pw').value='';showScreen('sc-entry');}
 
-async function loadAdmin(){
+function adminLogin(){
+  adminPw=document.getElementById('admin-pw').value;
+  if(adminPw===ADMIN_PASSWORD){
+    document.getElementById('admin-err').style.display='none';
+    document.body.classList.add('is-admin');
+    document.getElementById('header-btn').textContent='← 診断に戻る';
+    document.getElementById('header-btn').onclick=adminLogout;
+    document.getElementById('main-container').style.maxWidth='960px';
+    showScreen('sc-admin');
+    loadAdminData();
+  }else{
+    document.getElementById('admin-err').style.display='block';
+  }
+}
+document.getElementById('admin-pw').addEventListener('keydown',e=>{if(e.key==='Enter')adminLogin();});
+
+function adminLogout(){
+  adminPw='';
+  exitAdmin();
+  showScreen('sc-entry');
+}
+
+function exitAdmin(){
+  document.body.classList.remove('is-admin');
+  document.getElementById('header-btn').textContent='🔒 管理画面';
+  document.getElementById('header-btn').onclick=showAdminLogin;
+  document.getElementById('main-container').style.maxWidth='';
+}
+
+async function loadAdminData(){
   document.getElementById('admin-loading').style.display='flex';
   document.getElementById('admin-content').style.display='none';
   try{
-    const res=await fetch(`${SUPABASE_URL}/rest/v1/setsubi_shindan?order=created_at.desc&limit=300`,{headers:{'apikey':SUPABASE_KEY,'Authorization':`Bearer ${SUPABASE_KEY}`}});
-    adminRows=await res.json();
-    const weekAgo=new Date(Date.now()-7*24*60*60*1000);
-    const named=adminRows.filter(r=>r.company_name&&r.company_name!=='（未入力）').length;
-    const counts={};adminRows.forEach(r=>{counts[r.situation]=(counts[r.situation]||0)+1;});
-    const top=Object.entries(counts).sort((a,b)=>b[1]-a[1])[0];
-    document.getElementById('admin-stats').innerHTML=`
-      <div class="stat-card"><div class="stat-num">${adminRows.length}</div><div class="stat-lbl">総診断数</div></div>
-      <div class="stat-card"><div class="stat-num">${adminRows.filter(r=>new Date(r.created_at)>weekAgo).length}</div><div class="stat-lbl">今週</div></div>
-      <div class="stat-card"><div class="stat-num" style="font-size:14px;padding-top:8px">${top?(SIT_LABELS[top[0]]||top[0]):'—'}</div><div class="stat-lbl">最多お困りごと</div></div>
-      <div class="stat-card"><div class="stat-num">${named}</div><div class="stat-lbl">会社名あり</div></div>`;
-    if(!adminRows.length){document.getElementById('admin-tbody').innerHTML='<tr><td colspan="6" style="text-align:center;padding:2rem;color:#7A9CA8">まだデータがありません</td></tr>';}
-    else{
-      document.getElementById('admin-tbody').innerHTML=adminRows.map(r=>{
-        const dt=new Date(r.created_at);
-        const ds=`${dt.getMonth()+1}/${dt.getDate()} ${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}`;
-        const dk=r.drawing_detail||r.automation_detail||r.optical_detail||r.electrical_detail||r.production_detail||'';
-        const svcs=(r.services||'').split(' / ').filter(Boolean);
-        return`<tr><td>${ds}</td><td>${esc(r.company_name||'—')}</td><td><span class="pill ${SIT_PILL[r.situation]||'pill-gray'}">${SIT_LABELS[r.situation]||r.situation||'—'}</span></td><td>${DET_LABELS[dk]||dk||'—'}</td><td>${SCALE_LABELS[r.scale]||r.scale||'—'}</td><td>${svcs.map(s=>`<span class="pill pill-teal" style="margin:1px">${esc(s)}</span>`).join('')}</td></tr>`;
-      }).join('');
-    }
+    const res=await fetch(`${SUPABASE_URL}/rest/v1/setsubi_shindan?order=created_at.desc&limit=300`,{
+      headers:{'apikey':SUPABASE_KEY,'Authorization':`Bearer ${SUPABASE_KEY}`}
+    });
+    const rows=await res.json();
+    adminRows=rows.map(r=>({
+      datetime: r.created_at ? new Date(r.created_at).toLocaleString('ja-JP',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}) : '',
+      company:   r.company_name||'',
+      emp_size:  r.emp_size||'',
+      industry:  r.industry||'',
+      situation: r.situation||'',
+      detail:    r.drawing_detail||r.automation_detail||r.optical_detail||r.electrical_detail||r.production_detail||'',
+      scale:     r.scale||'',
+      services:  r.services||'',
+    }));
+    renderAdminStats(adminRows);
+    renderAdminTable(adminRows);
     document.getElementById('admin-loading').style.display='none';
     document.getElementById('admin-content').style.display='block';
-  }catch(e){document.getElementById('admin-loading').innerHTML='<p style="color:#E24B4A">データ取得に失敗しました</p>';}
+  }catch(e){
+    document.getElementById('admin-loading').innerHTML='<p style="color:#E24B4A">データ取得に失敗しました</p>';
+  }
+}
+
+function renderAdminStats(rows){
+  const counts={};rows.forEach(r=>{counts[r.situation]=(counts[r.situation]||0)+1;});
+  const top=Object.entries(counts).sort((a,b)=>b[1]-a[1])[0];
+  const named=rows.filter(r=>r.company&&r.company!=='（未入力）').length;
+  const weekAgo=new Date(Date.now()-7*24*60*60*1000);
+  const thisWeek=rows.filter(r=>{
+    if(!r.datetime)return false;
+    const parts=r.datetime.split(' ');
+    if(parts.length<1)return false;
+    const md=parts[0].split('/');
+    if(md.length<2)return false;
+    const d=new Date(new Date().getFullYear(),parseInt(md[0])-1,parseInt(md[1]));
+    return d>weekAgo;
+  }).length;
+  document.getElementById('admin-stats').innerHTML=`
+    <div class="stat-card"><div class="stat-num">${rows.length}</div><div class="stat-lbl">総診断数</div></div>
+    <div class="stat-card"><div class="stat-num">${thisWeek}</div><div class="stat-lbl">今週</div></div>
+    <div class="stat-card"><div class="stat-num" style="font-size:14px;padding-top:8px">${top?(SIT_LABELS[top[0]]||top[0]):'—'}</div><div class="stat-lbl">最多お困りごと</div></div>
+    <div class="stat-card"><div class="stat-num">${named}</div><div class="stat-lbl">会社名あり</div></div>`;
+}
+
+function renderAdminTable(rows){
+  if(!rows.length){
+    document.getElementById('admin-tbody').innerHTML='<tr><td colspan="6" style="text-align:center;padding:2rem;color:#7A9CA8">まだデータがありません</td></tr>';
+    return;
+  }
+  document.getElementById('admin-tbody').innerHTML=rows.map(r=>{
+    const svcs=(r.services||'').split(' / ').filter(Boolean);
+    return`<tr>
+      <td>${r.datetime||'—'}</td>
+      <td>${esc(r.company||'—')}</td>
+      <td>${esc(r.emp_size||'—')}</td>
+      <td>${esc(r.industry||'—')}</td>
+      <td><span class="pill ${SIT_PILL[r.situation]||'pill-gray'}">${SIT_LABELS[r.situation]||r.situation||'—'}</span></td>
+      <td>${DET_LABELS[r.detail]||r.detail||'—'}</td>
+      <td>${SCALE_LABELS[r.scale]||r.scale||'—'}</td>
+      <td>${svcs.map(s=>`<span class="pill pill-teal">${esc(s)}</span>`).join('')}</td>
+    </tr>`;
+  }).join('');
 }
 
 function exportCSV(){
   if(!adminRows.length)return;
-  const header=['日時','会社名','お困りごと','詳細','規模','提案サービス'];
-  const rows=adminRows.map(r=>{
-    const dt=new Date(r.created_at).toLocaleString('ja-JP');
-    const dk=r.drawing_detail||r.automation_detail||r.optical_detail||r.electrical_detail||r.production_detail||'';
-    return[dt,r.company_name||'',SIT_LABELS[r.situation]||r.situation||'',DET_LABELS[dk]||dk||'',SCALE_LABELS[r.scale]||r.scale||'',r.services||''].map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',');
-  });
+  const header=['日時','会社名','従業員数','業種','お困りごと','詳細','規模','提案サービス'];
+  const rows=adminRows.map(r=>[
+    r.datetime,r.company,r.emp_size||'',r.industry||'',
+    SIT_LABELS[r.situation]||r.situation||'',
+    DET_LABELS[r.detail]||r.detail||'',
+    SCALE_LABELS[r.scale]||r.scale||'',
+    r.services
+  ].map(v=>`"${String(v||'').replace(/"/g,'""')}"`).join(','));
   const blob=new Blob(['\uFEFF'+[header.join(','),...rows].join('\n')],{type:'text/csv;charset=utf-8'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='設備診断履歴.csv';a.click();
 }
+
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 </script>
 </body>
