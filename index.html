@@ -448,7 +448,9 @@ function renderWizard(){
     };
     wrap.appendChild(btn);
   });
-  document.getElementById('btn-back').disabled=done===0;
+  const backBtn=document.getElementById('btn-back');
+  backBtn.disabled=done===0;
+  backBtn.style.visibility=done===0?'hidden':'visible';
   document.getElementById('btn-next').disabled=true;
 }
 function wizNext(){const q=currentQ();if(!q||!answers[q.id])return;history.push(q.id);document.getElementById('btn-next').disabled=true;renderWizard();}
