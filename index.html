@@ -321,14 +321,7 @@ const QUESTIONS = [
       { val:'prod_sim',    icon:'💻', main:'解析・シミュレーション',       desc:'応力解析、熱解析、振動解析、衝撃解析による設計品質担保' },
     ]
   },
-  { id:'scale', cond_not:{situation:['optical','electrical','production']}, cat:'質問 3', text:'設備・作業の規模感を教えてください', sub:'おおよそで構いません',
-    choices:[
-      { val:'line',    icon:'🏭', main:'ライン・工程単位',   desc:'一つの工程や製造ラインをまるごと改善したい' },
-      { val:'unit',    icon:'🖥', main:'機械・装置ひとつ',   desc:'特定の装置や機械を新設・改造したい' },
-      { val:'part',    icon:'🔩', main:'部品・ユニット単位', desc:'一部の機構だけ作り直したい、部品の図面を起こしたい' },
-      { val:'unknown', icon:'❓', main:'まだわからない',     desc:'規模感から一緒に整理してほしい' },
-    ]
-  },
+
 ];
 
 const SERVICES = {
@@ -351,7 +344,7 @@ const SERVICES = {
   prod_design:           { bg:'#E8F5E9', ic:'#1B5E20', icon:'✏️', title:'製品設計・構造設計',                               body:'ダイカスト・樹脂成型・板金など幅広い素材・工法に対応した製品設計。ARグラスなどの先端製品の設計経験もあります。',                  evidence:'量産製品の開発〜量産まで一貫した設計経験があります。生産性と品質を両立した設計が強みです。' },
   prod_sim:              { bg:'#E8F5E9', ic:'#1B5E20', icon:'💻', title:'設計解析・シミュレーション',                       body:'応力解析・熱解析・振動解析・衝撃解析を設計段階で実施し、試作前に問題を検出・設計品質を担保します。',                               evidence:'設計段階での品質担保を目的とした各種CAE解析の実務経験があります。' },
   repair:                { bg:'#FAEEDA', ic:'#BA7517', icon:'🔧', title:'古い設備の修理・改造',                              body:'図面も資料も残っていなくても、現物を調査して修理・改造の方針を提案します。現地確認から対応可能です。',                               evidence:'図面や資料のない設備への対応経験あり。現物ベースで修理・改造の方針を組み立てるノウハウがあります。' },
-  scale_line:            { bg:'#E6F1FB', ic:'#185FA5', icon:'🏭', title:'製造ライン全体の自動化・改善提案',                 body:'工程単位での課題を整理し、優先度の高い箇所から自動化をご提案。段階的な改善計画も作成します。',                                       evidence:'量産設備設計・生産技術の経験をもとに、ライン全体を見渡した設計アプローチが可能です。' },
+
   consult:               { bg:'#E1F5EE', ic:'#0F6E56', icon:'💬', title:'まずは無料ヒアリング・課題整理',                   body:'「何から手をつければいいかわからない」という段階から大歓迎です。現状をお聞きし、優先順位の整理からご一緒します。',                     evidence:'メカ・光学・電気・生産技術まで幅広く経験した技術者が、現場目線でお話を伺います。' },
 };
 
@@ -371,8 +364,7 @@ function currentQ(){return visibleSteps()[history.length]||null;}
 function totalSteps(){
   const s=answers.situation;
   if(s==='repair'||s==='consult')return 1;
-  if(s==='optical'||s==='electrical'||s==='production')return 2;
-  return 3;
+  return 2;
 }
 function getServices(){
   const s=[];
@@ -397,9 +389,9 @@ function getServices(){
   if(answers.production_detail==='prod_kaizen')  s.push(SERVICES.prod_kaizen);
   if(answers.production_detail==='prod_design')  s.push(SERVICES.prod_design);
   if(answers.production_detail==='prod_sim')     s.push(SERVICES.prod_sim);
-  if(answers.situation==='automation' && answers.scale==='line') s.push(SERVICES.scale_line);
+
   if(s.length===0) s.push(SERVICES.consult);
-  return s.slice(0,2);
+  return s.slice(0,1);
 }
 
 function showScreen(id){
