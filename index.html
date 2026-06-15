@@ -376,7 +376,8 @@ function getServices(){
   if(answers.drawing_detail==='manage')  s.push(SERVICES.drawing_manage);
   if(answers.automation_detail==='transfer')   s.push(SERVICES.automation_transfer);
   if(answers.automation_detail==='inspection') s.push(SERVICES.automation_inspection);
-  if(answers.automation_detail==='assembly'||answers.automation_detail==='undecided') s.push(SERVICES.automation_assembly);
+  if(answers.automation_detail==='assembly') s.push(SERVICES.automation_assembly);
+  if(answers.automation_detail==='undecided') s.push(SERVICES.consult);
   if(answers.optical_detail==='optical_new')     s.push(SERVICES.optical_new);
   if(answers.optical_detail==='optical_review')  s.push(SERVICES.optical_review);
   if(answers.optical_detail==='optical_hud')     s.push(SERVICES.optical_hud);
