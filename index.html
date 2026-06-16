@@ -111,6 +111,19 @@ table.results-tbl tr:hover td { background: var(--bg); }
 .pill-yellow { background: var(--yellow-light); color: var(--yellow); }
 .pill-green  { background: var(--green-light);  color: var(--green); }
 .pill-gray   { background: #F1EFE8; color: #5F5E5A; }
+.sort-btn { background: none; border: none; cursor: pointer; font-size: 11px; color: var(--text-muted); padding: 0 2px; }
+.sort-btn:hover { color: var(--text); }
+.sort-btn.active { color: var(--teal); font-weight: 700; }
+.btn-danger { background: #FEE2E2; color: #B91C1C; border-color: #FECACA; }
+.btn-danger:hover { background: #FECACA; }
+.check-col { width: 36px; text-align: center; }
+input[type=checkbox] { width: 15px; height: 15px; cursor: pointer; accent-color: var(--teal); }
+.filter-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 1rem; }
+.filter-select { padding: 6px 10px; border: 1px solid var(--border); border-radius: var(--radius); font-size: 12px; font-family: inherit; background: var(--surface); color: var(--text); cursor: pointer; }
+.filter-select:focus { outline: none; border-color: var(--teal); }
+.delete-bar { display: none; background: #FEE2E2; border: 1px solid #FECACA; border-radius: var(--radius); padding: 8px 14px; margin-bottom: .75rem; display: flex; align-items: center; justify-content: space-between; }
+.delete-bar.hidden { display: none; }
+.delete-bar-text { font-size: 13px; color: #B91C1C; font-weight: 500; }
 
 /* ── Utils */
 .loading { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 2rem; color: var(--text-muted); font-size: 14px; }
@@ -245,16 +258,63 @@ body.is-admin .site-header-inner { max-width: 960px; }
         <h2>📊 診断履歴管理</h2>
         <div class="flex-row">
           <button class="btn btn-secondary" style="font-size:12px;padding:5px 12px" onclick="exportCSV()">CSV出力</button>
+          <button class="btn btn-danger" style="font-size:12px;padding:5px 12px" onclick="deleteAll()">🗑 全件削除</button>
           <button class="btn btn-secondary" style="font-size:12px;padding:5px 12px" onclick="adminLogout()">ログアウト</button>
         </div>
       </div>
       <div id="admin-loading" class="loading"><div class="spinner"></div>読み込み中...</div>
       <div id="admin-content" style="display:none">
         <div class="stats-grid" id="admin-stats"></div>
+
+        <!-- フィルター・ソート -->
+        <div class="filter-row">
+          <select class="filter-select" id="filter-industry" onchange="applyFilter()">
+            <option value="">業種：すべて</option>
+            <option value="製造">製造</option>
+            <option value="IT・通信">IT・通信</option>
+            <option value="小売・流通">小売・流通</option>
+            <option value="医療・福祉">医療・福祉</option>
+            <option value="建設">建設</option>
+            <option value="サービス">サービス</option>
+            <option value="その他">その他</option>
+          </select>
+          <select class="filter-select" id="filter-size" onchange="applyFilter()">
+            <option value="">規模：すべて</option>
+            <option value="1-10">1〜10名</option>
+            <option value="11-30">11〜30名</option>
+            <option value="31-100">31〜100名</option>
+            <option value="101+">101名以上</option>
+          </select>
+          <select class="filter-select" id="filter-sit" onchange="applyFilter()">
+            <option value="">お困りごと：すべて</option>
+            <option value="automation">自動化・省力化</option>
+            <option value="drawing">図面まわり</option>
+            <option value="optical">光学設計</option>
+            <option value="electrical">電気回路</option>
+            <option value="production">生産・製品設計</option>
+            <option value="repair">設備修理・改造</option>
+            <option value="consult">まず相談</option>
+          </select>
+          <button class="btn btn-secondary" style="font-size:12px;padding:5px 12px" onclick="clearFilter()">リセット</button>
+        </div>
+
+        <!-- 選択削除バー -->
+        <div class="delete-bar hidden" id="delete-bar">
+          <span class="delete-bar-text" id="delete-bar-text"></span>
+          <button class="btn btn-danger" style="font-size:12px;padding:5px 12px" onclick="deleteSelected()">選択したデータを削除</button>
+        </div>
+
         <div class="table-wrap">
           <table class="results-tbl">
             <thead><tr>
-              <th>日時</th><th>会社名</th><th>従業員数</th><th>業種</th><th>お困りごと</th><th>詳細</th><th>規模</th><th>提案サービス</th>
+              <th class="check-col"><input type="checkbox" id="check-all" onclick="toggleAll(this)"></th>
+              <th>日時 <button class="sort-btn" onclick="sortBy('datetime')">▲▼</button></th>
+              <th>会社名 <button class="sort-btn" onclick="sortBy('company')">▲▼</button></th>
+              <th>従業員数 <button class="sort-btn" onclick="sortBy('emp_size')">▲▼</button></th>
+              <th>業種 <button class="sort-btn" onclick="sortBy('industry')">▲▼</button></th>
+              <th>お困りごと</th>
+              <th>詳細</th>
+              <th>提案サービス</th>
             </tr></thead>
             <tbody id="admin-tbody"></tbody>
           </table>
@@ -565,6 +625,8 @@ function exitAdmin(){
   document.getElementById('main-container').style.maxWidth='';
 }
 
+let sortKey='datetime', sortAsc=false, filteredRows=[];
+
 async function loadAdminData(){
   document.getElementById('admin-loading').style.display='flex';
   document.getElementById('admin-content').style.display='none';
@@ -574,7 +636,9 @@ async function loadAdminData(){
     });
     const rows=await res.json();
     adminRows=rows.map(r=>({
-      datetime: r.created_at ? new Date(r.created_at).toLocaleString('ja-JP',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}) : '',
+      id:        r.id,
+      datetime:  r.created_at ? new Date(r.created_at).toLocaleString('ja-JP',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}) : '',
+      created_at: r.created_at||'',
       company:   r.company_name||'',
       emp_size:  r.emp_size||'',
       industry:  r.industry||'',
@@ -583,13 +647,88 @@ async function loadAdminData(){
       scale:     r.scale||'',
       services:  r.services||'',
     }));
+    filteredRows=[...adminRows];
     renderAdminStats(adminRows);
-    renderAdminTable(adminRows);
+    renderAdminTable(filteredRows);
     document.getElementById('admin-loading').style.display='none';
     document.getElementById('admin-content').style.display='block';
   }catch(e){
     document.getElementById('admin-loading').innerHTML='<p style="color:#E24B4A">データ取得に失敗しました</p>';
   }
+}
+
+function applyFilter(){
+  const ind=document.getElementById('filter-industry').value;
+  const sz=document.getElementById('filter-size').value;
+  const sit=document.getElementById('filter-sit').value;
+  filteredRows=adminRows.filter(r=>
+    (!ind||r.industry===ind)&&
+    (!sz||r.emp_size===sz)&&
+    (!sit||r.situation===sit)
+  );
+  renderAdminTable(filteredRows);
+  updateDeleteBar();
+}
+
+function clearFilter(){
+  document.getElementById('filter-industry').value='';
+  document.getElementById('filter-size').value='';
+  document.getElementById('filter-sit').value='';
+  filteredRows=[...adminRows];
+  renderAdminTable(filteredRows);
+  updateDeleteBar();
+}
+
+function sortBy(key){
+  if(sortKey===key){ sortAsc=!sortAsc; }else{ sortKey=key; sortAsc=true; }
+  document.querySelectorAll('.sort-btn').forEach(b=>b.classList.remove('active'));
+  filteredRows.sort((a,b)=>{
+    const va=String(a[key]||''), vb=String(b[key]||'');
+    return sortAsc ? va.localeCompare(vb,'ja') : vb.localeCompare(va,'ja');
+  });
+  renderAdminTable(filteredRows);
+}
+
+function toggleAll(cb){
+  document.querySelectorAll('.row-check').forEach(c=>c.checked=cb.checked);
+  updateDeleteBar();
+}
+
+function updateDeleteBar(){
+  const checked=document.querySelectorAll('.row-check:checked').length;
+  const bar=document.getElementById('delete-bar');
+  if(checked>0){
+    bar.classList.remove('hidden');
+    document.getElementById('delete-bar-text').textContent=`${checked}件を選択中`;
+  }else{
+    bar.classList.add('hidden');
+  }
+}
+
+async function deleteSelected(){
+  const ids=[...document.querySelectorAll('.row-check:checked')].map(c=>c.dataset.id);
+  if(!ids.length)return;
+  if(!confirm(`選択した${ids.length}件のデータを削除しますか？`))return;
+  try{
+    await fetch(`${SUPABASE_URL}/rest/v1/setsubi_shindan?id=in.(${ids.join(',')})`,{
+      method:'DELETE',
+      headers:{'apikey':SUPABASE_KEY,'Authorization':`Bearer ${SUPABASE_KEY}`}
+    });
+    await loadAdminData();
+  }catch(e){ alert('削除に失敗しました'); }
+}
+
+async function deleteAll(){
+  if(!adminRows.length)return;
+  if(!confirm(`全${adminRows.length}件のデータを削除します。この操作は取り消せません。本当によろしいですか？`))return;
+  if(!confirm('もう一度確認します。全データを削除しますか？'))return;
+  try{
+    await fetch(`${SUPABASE_URL}/rest/v1/setsubi_shindan?id=gte.0`,{
+      method:'DELETE',
+      headers:{'apikey':SUPABASE_KEY,'Authorization':`Bearer ${SUPABASE_KEY}`}
+    });
+    await loadAdminData();
+  }catch(e){ alert('削除に失敗しました'); }
 }
 
 function renderAdminStats(rows){
@@ -614,20 +753,22 @@ function renderAdminStats(rows){
 }
 
 function renderAdminTable(rows){
+  document.getElementById('check-all').checked=false;
+  document.getElementById('delete-bar').classList.add('hidden');
   if(!rows.length){
-    document.getElementById('admin-tbody').innerHTML='<tr><td colspan="6" style="text-align:center;padding:2rem;color:#7A9CA8">まだデータがありません</td></tr>';
+    document.getElementById('admin-tbody').innerHTML='<tr><td colspan="8" style="text-align:center;padding:2rem;color:#7A9CA8">データがありません</td></tr>';
     return;
   }
   document.getElementById('admin-tbody').innerHTML=rows.map(r=>{
     const svcs=(r.services||'').split(' / ').filter(Boolean);
     return`<tr>
+      <td class="check-col"><input type="checkbox" class="row-check" data-id="${r.id}" onchange="updateDeleteBar()"></td>
       <td>${r.datetime||'—'}</td>
       <td>${esc(r.company||'—')}</td>
       <td>${esc(r.emp_size||'—')}</td>
       <td>${esc(r.industry||'—')}</td>
       <td><span class="pill ${SIT_PILL[r.situation]||'pill-gray'}">${SIT_LABELS[r.situation]||r.situation||'—'}</span></td>
       <td>${DET_LABELS[r.detail]||r.detail||'—'}</td>
-      <td>${SCALE_LABELS[r.scale]||r.scale||'—'}</td>
       <td>${svcs.map(s=>`<span class="pill pill-teal">${esc(s)}</span>`).join('')}</td>
     </tr>`;
   }).join('');
