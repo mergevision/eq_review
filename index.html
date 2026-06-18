@@ -527,6 +527,7 @@ function showResult(){
 
 const SUPABASE_URL='https://wvhwxpookqktbzfofxcy.supabase.co';
 const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind2aHd4cG9va3FrdGJ6Zm9meGN5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEwNzM4ODAsImV4cCI6MjA5NjY0OTg4MH0.wzKen3asNkQ0zttVvUnpzmJZRUjTf7fzHBd3Go23ptE';
+const FORMSPREE_URL='https://formspree.io/f/xvznnybd';
 
 async function saveData(svcs){
   const detail=answers.drawing_detail||answers.automation_detail||answers.optical_detail||answers.electrical_detail||answers.production_detail||'';
@@ -546,6 +547,23 @@ async function saveData(svcs){
       }),
     });
     if(res.ok) document.getElementById('saved-note').textContent='✓ 診断結果を送信しました';
+  }catch(e){console.error(e);}
+
+  // Formspreeでメール通知
+  try{
+    await fetch(FORMSPREE_URL,{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Accept':'application/json'},
+      body:JSON.stringify({
+        _subject: `【設備診断】新しい診断結果：${company||'（未入力）'}`,
+        会社名: company||'（未入力）',
+        従業員数: empSize||'—',
+        業種: industry||'—',
+        お困りごと: SIT_LABELS[answers.situation]||answers.situation||'—',
+        詳細: DET_LABELS[detail]||detail||'—',
+        提案サービス: svcs.map(s=>s.title).join(' / '),
+      }),
+    });
   }catch(e){console.error(e);}
 }
 
